@@ -1436,7 +1436,7 @@ def configuration_identifier(underlying_graph,identifications):
     
     
     
-import choosability_8 as ch
+import choosability as ch
 import time
 
 def check_stem_identifications(rc_str):
