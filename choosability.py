@@ -2756,8 +2756,8 @@ def CNS_smart_print(G, f):
 
 
 
-def graph_poly(G_copy):
-    if G_copy.size() > 20:
+def graph_poly(G_copy,override=False):
+    if not override and G_copy.size() > 20:
         print "Error:  Graph size arbitrarily limited to 20 edges to prevent computing too large of polynomials."
         return
     
