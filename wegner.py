@@ -340,472 +340,465 @@ def makeRedCon(configuration):
 
 
 
-global ReducibleListD
-global ReducibleListF
-global ReducibleListC
-global ReducibleList
-ReducibleListD = ['d3e3','d3ee3','d3eee3','d3e4']
-ReducibleListF = ['f3v3','f3v4','f3v5','f3v6','f4v4',
-                 'f3v7v5','f3v7v6',
-                 'f4v5v4','f4v5v5','f4v5v6','f4v6v4','f4v6v5','f4v6v6','f4v7v4',
-                 'f5v4v6',
-                 'f4v5v7v4',
-                 'f5v5v5v5v5v5']
-ReducibleListC = ['c3a777',
-                 'c4a55','c4a56','c4a57','c4a66',
-                 'c4a585','c4a676','c4a677','c4a686',
-                 'c5a555','c5a556','c5a557','c5a565','c5a566','c5a567','c5a575','c5a576',
-                 'c5a656','c5a657','c5a666','c5a667','5a676',
-                 'c5a55x6',
-                 'c6a4xx4',
-                 'c7a3xx4','c7a3xx5','c7a4xx4','c7a55x5',
-                 'c8a3xx4','c8a3xxx4','c8a3x55x55','c8a4xx4','c8a4xxx4',
-                 'c9a3xx4','c9a3xxx4',
-                 'c10a3xxx4','c10a3xxxx3','c10a3xxxx4',
-                 'c11a3xxxx3',
-                 'c12a3xxxxx3']
-ReducibleList = ReducibleListD
-ReducibleList.extend(ReducibleListF)
-ReducibleList.extend(ReducibleListC)
+#global ReducibleListD
+#global ReducibleListF
+#global ReducibleListC
+#global ReducibleList
+#ReducibleListD = ['d3e3','d3ee3','d3eee3','d3e4']
+#ReducibleListF = ['f3v3','f3v4','f3v5','f3v6','f4v4',
+                 #'f3v7v5','f3v7v6',
+                 #'f4v5v4','f4v5v5','f4v5v6','f4v6v4','f4v6v5','f4v6v6','f4v7v4',
+                 #'f5v4v6',
+                 #'f4v5v7v4',
+                 #'f5v5v5v5v5v5']
+#ReducibleListC = ['c3a777',
+                 #'c4a55','c4a56','c4a57','c4a66',
+                 #'c4a585','c4a676','c4a677','c4a686',
+                 #'c5a555','c5a556','c5a557','c5a565','c5a566','c5a567','c5a575','c5a576',
+                 #'c5a656','c5a657','c5a666','c5a667','5a676',
+                 #'c5a55x6',
+                 #'c6a4xx4',
+                 #'c7a3xx4','c7a3xx5','c7a4xx4','c7a55x5',
+                 #'c8a3xx4','c8a3xxx4','c8a3x55x55','c8a4xx4','c8a4xxx4',
+                 #'c9a3xx4','c9a3xxx4',
+                 #'c10a3xxx4','c10a3xxxx3','c10a3xxxx4',
+                 #'c11a3xxxx3',
+                 #'c12a3xxxxx3']
+#ReducibleList = ReducibleListD
+#ReducibleList.extend(ReducibleListF)
+#ReducibleList.extend(ReducibleListC)
 
-global RedDict
-RedDict = {}
+#global RedDict
+#RedDict = {}
 
-#This makes all of the RedCon objecs for the configurations listed in ReducibleList, and associates them with their string in RedDict.
-def createLibRCs():
-    global RedDict
-    for x in ReducibleList:
-        RedDict[x] = makeRedCon(x)
-
-
+##This makes all of the RedCon objecs for the configurations listed in ReducibleList, and associates them with their string in RedDict.
+#def createLibRCs():
+    #global RedDict
+    #for x in ReducibleList:
+        #RedDict[x] = makeRedCon(x)
 
 
 
 
 
-#Returns problems (nonreducible and not happy) majorized by ceiling and with at least one (5-)-face.
-def findProblems(central_length,ceiling):
-    nonreducibles_unsimmered = findNonReducible(central_length,ceiling)
-    nonreducibles = simmer(nonreducibles_unsimmered)
-    problems = []
-    for t in nonreducibles:
-        if not happy(central_length,t):
-            problems.append(t)
-    return problems
 
-#Returns non-reducible configurations whose outer faces are majorized by ceiling and with at least one (5-)-face.
-def findNonReducible(central_length,ceiling):
-    nonreducible = []
-    stack=[3,]
-    i=0
-    if central_length < 6:
-        a = 100#artificial infinity
-    else:
-        a = 6
-    while stack[0] < a:
-        full =  (i == central_length-1)
-        if reducible(central_length,stack,full):
-            back = True
-        else:
-            back = False
+
+##Returns problems (nonreducible and not happy) majorized by ceiling and with at least one (5-)-face.
+#def findProblems(central_length,ceiling):
+    #nonreducibles_unsimmered = findNonReducible(central_length,ceiling)
+    #nonreducibles = simmer(nonreducibles_unsimmered)
+    #problems = []
+    #for t in nonreducibles:
+        #if not happy(central_length,t):
+            #problems.append(t)
+    #return problems
+
+##Returns non-reducible configurations whose outer faces are majorized by ceiling and with at least one (5-)-face.
+#def findNonReducible(central_length,ceiling):
+    #nonreducible = []
+    #stack=[3,]
+    #i=0
+    #if central_length < 6:
+        #a = 100#artificial infinity
+    #else:
+        #a = 6
+    #while stack[0] < a:
+        #full =  (i == central_length-1)
+        #if reducible(central_length,stack,full):
+            #back = True
+        #else:
+            #back = False
         
-        if full and not back:
-            nonreducible.append(tuple(stack))
-            back = True
+        #if full and not back:
+            #nonreducible.append(tuple(stack))
+            #back = True
         
-        if back:
-            while stack[i] == ceiling[i]:
-                del stack[i]
-                i -= 1
-                if i < 0:
-                    return nonreducible
-            stack[i] += 1
-        else:
-            stack.append(stack[0])
-            i += 1
-    return nonreducible
+        #if back:
+            #while stack[i] == ceiling[i]:
+                #del stack[i]
+                #i -= 1
+                #if i < 0:
+                    #return nonreducible
+            #stack[i] += 1
+        #else:
+            #stack.append(stack[0])
+            #i += 1
+    #return nonreducible
 
 
 
-#Generate and check possible subconfigurations.
-#If any configurations are added to type 'd' or 'f', or to 'c' with 'x's, then the code will need to be adjusted accordingly.
-def reducible(central_length,stack,full):
-    global ReducibleListF
-    global ReducibleListC
-    global ReducibleList
+##Generate and check possible subconfigurations.
+##If any configurations are added to type 'd' or 'f', or to 'c' with 'x's, then the code will need to be adjusted accordingly.
+#def reducible(central_length,stack,full):
+    #global ReducibleListF
+    #global ReducibleListC
+    #global ReducibleList
     
-    #First, check for subconfigurations with two faces (type 'd' and type 'fAvB' where A is 3 or 4)
-    #Central face included
-    if central_length == 3 and [x for x in stack if x < 7]:
-        return True
-    if central_length == 4 and 4 in stack:
-        return True
-    if central_length < 7 and 3 in stack:
-        return True
-    #Outer faces only
-    spots3 = [i for i,x in enumerate(stack) if x==3]
-    if len(spots3) > 1:
-        if min([spots3[j+1]-spots3[j] for j in range(len(spots3)-1)]) < 5:
-            return True
-        if full and spots3[0] + central_length - spots3[-1] < 5:
-            return True
-        spots4 = [i for i,x in enumerate(stack) if x==4]
-        for i in spots4:
-            for j in spots3:
-                if -3 < i-j < 3:
-                    return True
-        if full and ( spots3[0] + central_length - spots4[-1] < 3 or spots4[0] + central_length - spots3[-1] < 3 ):
-            return True
+    ##First, check for subconfigurations with two faces (type 'd' and type 'fAvB' where A is 3 or 4)
+    ##Central face included
+    #if central_length == 3 and [x for x in stack if x < 7]:
+        #return True
+    #if central_length == 4 and 4 in stack:
+        #return True
+    #if central_length < 7 and 3 in stack:
+        #return True
+    ##Outer faces only
+    #spots3 = [i for i,x in enumerate(stack) if x==3]
+    #if len(spots3) > 1:
+        #if min([spots3[j+1]-spots3[j] for j in range(len(spots3)-1)]) < 5:
+            #return True
+        #if full and spots3[0] + central_length - spots3[-1] < 5:
+            #return True
+        #spots4 = [i for i,x in enumerate(stack) if x==4]
+        #for i in spots4:
+            #for j in spots3:
+                #if -3 < i-j < 3:
+                    #return True
+        #if full and ( spots3[0] + central_length - spots4[-1] < 3 or spots4[0] + central_length - spots3[-1] < 3 ):
+            #return True
     
-    #Second, check for other type 'f' subconfigurations.
-    if len(stack) > 2:
-        #Three faces -- central face included
-        if central_length == 4:
-            if stack[0] == 5 and stack[2] == 6:
-                return True
-            if stack[0] == 6 and stack[2] == 5:
-                return True
-            if full:
-                if stack[1] == 5 and stack[3] == 6:
-                    return True
-                if stack[1] == 6 and stack[3] == 5:
-                    return True
-        if central_length in [5,6]:
-            for i in range(len(stack)-2):
-                if stack[i] == 4 and stack[i+2] in [4,5,6]:
-                    return True
-                if stack[i+2] == 4 and stack[i] in [4,5,6]:
-                    return True
-            if len(stack) > central_length-2:
-                if stack[0] == 4 and stack[central_length-2] in [4,5,6]:
-                    return True
-                if stack[central_length-2] == 4 and stack[0] in [4,5,6]:
-                    return True
-            if full:
-                if stack[1] == 4 and stack[central_length-1] in [4,5,6]:
-                    return True
-                if stack[central_length-1] == 4 and stack[1] in [4,5,6]:
-                    return True
-        if central_length == 7:
-            for i in range(len(stack)-2):
-                if stack[i] == 3 and stack[i+2] in [5,6]:
-                    return True
-                if stack[i+2] == 3 and stack[i] in [5,6]:
-                    return True
-                if stack[i] == 4 and stack[i+2] == 4:
-                    return True
-            if len(stack) > 5:
-                if stack[0] == 3 and stack[5] in [5,6]:
-                    return True
-                if stack[5] == 3 and stack[0] in [5,6]:
-                    return True
-                if stack[0] == 4 and stack[5] == 4:
-                    return True
-            if full:
-                if stack[0] == 3 and stack[6] in [5,6]:
-                    return True
-                if stack[6] == 3 and stack[0] in [5,6]:
-                    return True
-                if stack[0] == 4 and stack[6] == 4:
-                    return True
+    ##Second, check for other type 'f' subconfigurations.
+    #if len(stack) > 2:
+        ##Three faces -- central face included
+        #if central_length == 4:
+            #if stack[0] == 5 and stack[2] == 6:
+                #return True
+            #if stack[0] == 6 and stack[2] == 5:
+                #return True
+            #if full:
+                #if stack[1] == 5 and stack[3] == 6:
+                    #return True
+                #if stack[1] == 6 and stack[3] == 5:
+                    #return True
+        #if central_length in [5,6]:
+            #for i in range(len(stack)-2):
+                #if stack[i] == 4 and stack[i+2] in [4,5,6]:
+                    #return True
+                #if stack[i+2] == 4 and stack[i] in [4,5,6]:
+                    #return True
+            #if len(stack) > central_length-2:
+                #if stack[0] == 4 and stack[central_length-2] in [4,5,6]:
+                    #return True
+                #if stack[central_length-2] == 4 and stack[0] in [4,5,6]:
+                    #return True
+            #if full:
+                #if stack[1] == 4 and stack[central_length-1] in [4,5,6]:
+                    #return True
+                #if stack[central_length-1] == 4 and stack[1] in [4,5,6]:
+                    #return True
+        #if central_length == 7:
+            #for i in range(len(stack)-2):
+                #if stack[i] == 3 and stack[i+2] in [5,6]:
+                    #return True
+                #if stack[i+2] == 3 and stack[i] in [5,6]:
+                    #return True
+                #if stack[i] == 4 and stack[i+2] == 4:
+                    #return True
+            #if len(stack) > 5:
+                #if stack[0] == 3 and stack[5] in [5,6]:
+                    #return True
+                #if stack[5] == 3 and stack[0] in [5,6]:
+                    #return True
+                #if stack[0] == 4 and stack[5] == 4:
+                    #return True
+            #if full:
+                #if stack[0] == 3 and stack[6] in [5,6]:
+                    #return True
+                #if stack[6] == 3 and stack[0] in [5,6]:
+                    #return True
+                #if stack[0] == 4 and stack[6] == 4:
+                    #return True
         
-        #Three faces -- outer faces only
-        for i in range(len(stack)-2):
-            a = str(stack[i])
-            b = str(stack[i+1])
-            c = str(stack[i+2])
-            name = 'f'+a+'v'+b+'v'+c
-            if name in ReducibleListF:
-                return True
-            name = 'f'+c+'v'+b+'v'+a
-            if name in ReducibleListF:
-                return True
-        if full:
-            a = str(stack[-2])
-            b = str(stack[-1])
-            c = str(stack[0])
-            d = str(stack[1])
-            name = 'f'+a+'v'+b+'v'+c
-            if name in ReducibleListF:
-                return True
-            name = 'f'+c+'v'+b+'v'+a
-            if name in ReducibleListF:
-                return True
-            name = 'f'+b+'v'+c+'v'+d
-            if name in ReducibleListF:
-                return True
-            name = 'f'+d+'v'+c+'v'+b
-            if name in ReducibleListF:
-                return True
+        ##Three faces -- outer faces only
+        #for i in range(len(stack)-2):
+            #a = str(stack[i])
+            #b = str(stack[i+1])
+            #c = str(stack[i+2])
+            #name = 'f'+a+'v'+b+'v'+c
+            #if name in ReducibleListF:
+                #return True
+            #name = 'f'+c+'v'+b+'v'+a
+            #if name in ReducibleListF:
+                #return True
+        #if full:
+            #a = str(stack[-2])
+            #b = str(stack[-1])
+            #c = str(stack[0])
+            #d = str(stack[1])
+            #name = 'f'+a+'v'+b+'v'+c
+            #if name in ReducibleListF:
+                #return True
+            #name = 'f'+c+'v'+b+'v'+a
+            #if name in ReducibleListF:
+                #return True
+            #name = 'f'+b+'v'+c+'v'+d
+            #if name in ReducibleListF:
+                #return True
+            #name = 'f'+d+'v'+c+'v'+b
+            #if name in ReducibleListF:
+                #return True
         
-    #Four faces (outer faces only) ('f4v5v7v4' only)
-    if len(stack) > 3:
-        if full:
-            s = str(stack[-3])+str(stack[-2])+str(stack[-1])
-        else:
-            s = ''
-        for i in stack:
-            s += str(i)
-        if '4574' in s or '4754' in s:
-            return True
+    ##Four faces (outer faces only) ('f4v5v7v4' only)
+    #if len(stack) > 3:
+        #if full:
+            #s = str(stack[-3])+str(stack[-2])+str(stack[-1])
+        #else:
+            #s = ''
+        #for i in stack:
+            #s += str(i)
+        #if '4574' in s or '4754' in s:
+            #return True
 
-    #Lastly, check for type 'c' configurations.
-    if len(stack) < 2:
-        return False
-    c = str(central_length)
-    #Start with using an outer face as a central face of a subconfiguration.  (Only forms cAaBC and cAaBCD are necessary to check here, which also means no 'x's.)
-    if full:
-        for i in range(-1,len(stack)-1):
-            a = str(stack[i])
-            b = str(stack[i-1])
-            d = str(stack[i+1])
-            li = ['c'+a+'a'+b+c,'c'+a+'a'+c+b,'c'+a+'a'+c+d,'c'+a+'a'+d+c,'c'+a+'a'+b+c+d,'c'+a+'a'+d+c+b]
-            for name in li:
-                if name in ReducibleListC:
-                    return True
-    else:
-        if 'c'+str(stack[0])+'a'+str(stack[1])+c in ReducibleListC:
-            return True
-        if 'c'+str(stack[0])+'a'+c+str(stack[1]) in ReducibleListC:
-            return True
-        for i in range(1,len(stack)-1):
-            a = str(stack[i])
-            b = str(stack[i-1])
-            d = str(stack[i+1])
-            li = ['c'+a+'a'+b+c,'c'+a+'a'+c+b,'c'+a+'a'+c+d,'c'+a+'a'+d+c,'c'+a+'a'+b+c+d,'c'+a+'a'+d+c+b]
-            for name in li:
-                if name in ReducibleListC:
-                    return True
-        if 'c'+str(stack[-1])+'a'+str(stack[-2])+c in ReducibleListC:
-            return True
-        if 'c'+str(stack[-1])+'a'+c+str(stack[-2]) in ReducibleListC:
-            return True
-    #Now use the central face as the central face of the subconfiguration.  (For non-'x's -- which means two or three outer faces in the subconfiguration.)
-    if full:
-        for i in range(len(stack)):
-            b = str(stack[i-2])
-            a = str(stack[i-1])
-            d = str(stack[i])
-            li = ['c'+c+'a'+a+d,'c'+c+'a'+d+a,'c'+c+'a'+b+a+d,'c'+c+'a'+d+a+b]
-            for name in li:
-                if name in ReducibleListC:
-                    return True
-    else:
-        if 'c'+c+'a'+str(stack[0])+str(stack[1]) in ReducibleListC:
-            return True
-        if 'c'+c+'a'+str(stack[1])+str(stack[0]) in ReducibleListC:
-            return True
-        for i in range(2,len(stack)):
-            b = str(stack[i-2])
-            a = str(stack[i-1])
-            d = str(stack[i])
-            li = ['c'+c+'a'+a+d,'c'+c+'a'+d+a,'c'+c+'a'+b+a+d,'c'+c+'a'+d+a+b]
-            for name in li:
-                if name in ReducibleListC:
-                    return True
-    #Now use the central face as the central face of the subconfiguration.  (For 'x's.  Each configuration manually coded.)
-    if len(stack) < 4:
-        return False
-    stack_list = stack[:]
-    for i in range(central_length-len(stack)):
-        stack_list.append('x')
-    stack_list.extend(stack[:])
-    if central_length == 5:#c5a55x6
-        spots5 = [i for i,x in enumerate(stack) if x==5]
-        spots6 = [i for i,x in enumerate(stack) if x==6]
-        for i in [x for x in spots5 if x<5]:
-            if i+1 in spots5 and i+3 in spots6:
-                return True
-        for i in [x for x in spots6 if x<5]:
-            if i+2 in spots5 and i+3 in spots5:
-                return True
-    elif central_length == 6:#c6a4xx4
-        spots4 = [i for i,x in enumerate(stack) if x==4]
-        for i in [x for x in spots4 if x<6]:
-            if i+3 in spots4:
-                return True
-    elif central_length == 7:#c7a3xx4, c7a3xx5, c7a4xx4, c7a55x5
-        spots3 = [i for i,x in enumerate(stack) if x==3]
-        spots4 = [i for i,x in enumerate(stack) if x==4]
-        spots5 = [i for i,x in enumerate(stack) if x==5]
-        for i in [x for x in spots3 if x<7]:
-            if i+3 in spots4 or i+3 in spots5:#3xx4, 3xx5
-                return True
-        for i in [x for x in spots4 if x<7]:
-            if i+3 in spots3 or i+3 in spots4:#4xx3, 4xx4
-                return True
-        for i in [x for x in spots5 if x<7]:
-            if i+3 in spots3:#5xx3
-                return True
-            if i+3 in spots5 and (i+1 in spots5 or i+2 in spots5):#55x5
-                return True
-    elif central_length == 8:#c8a3xx4, c8a3xxx4, c8a3x55x55, c8a4xx4, c8a4xxx4
-        spots3 = [i for i,x in enumerate(stack) if x==3]
-        spots4 = [i for i,x in enumerate(stack) if x==4]
-        spots5 = [i for i,x in enumerate(stack) if x==5]
-        for i in [x for x in spots3 if x<8]:
-            if i+3 in spots4 or i+4 in spots4:#3xx4, 3xxx4
-                return True
-            if i+2 in spots5 and i+3 in spots5 and i+5 in spots5 and i+6 in spots5:#3x55x55
-                return True
-        for i in [x for x in spots4 if x<8]:
-            if i+3 in spots3 or i+4 in spots3 or i+3 in spots4 or i+4 in spots4:#4xx3, 4xxx3, 4xx4, 4xxx4
-                return True
-        for i in [x for x in spots5 if x<8]:
-            if i+6 in spots3 and i+1 in spots5 and i+3 in spots5 and i+4 in spots5:#55x55x3
-                return True
-    elif central_length == 9:#c9a3xx4, c9a3xxx4
-        spots3 = [i for i,x in enumerate(stack) if x==3]
-        spots4 = [i for i,x in enumerate(stack) if x==4]
-        for i in [x for x in spots3 if x<9]:
-            if i+3 in spots4 or i+4 in spots4:#3xx4, 3xxx4
-                return True
-        for i in [x for x in spots4 if x<9]:
-            if i+3 in spots3 or i+4 in spots3:#4xx3, 4xxx3
-                return True
-    elif central_length == 10:#c10a3xxx4, c10a3xxxx3, c10a3xxxx4
-        spots3 = [i for i,x in enumerate(stack) if x==3]
-        spots4 = [i for i,x in enumerate(stack) if x==4]
-        for i in [x for x in spots3 if x<10]:
-            if i+4 in spots4 or i+5 in spots3 or i+5 in spots4:#3xxx4, 3xxxx3, 3xxxx4
-                return True
-        for i in [x for x in spots4 if x<10]:
-            if i+4 in spots3 or i+5 in spots3:#4xxx3, 4xxxx3
-                return True
-    elif central_length == 11:#c11a3xxxx3
-        spots3 = [i for i,x in enumerate(stack) if x==3]
-        for i in [x for x in spots3 if x<11]:
-            if i+5 in spots3:
-                return True
-    elif central_length == 12:#c12a3xxxxx3
-        spots3 = [i for i,x in enumerate(stack) if x==3]
-        for i in [x for x in spots3 if x<12]:
-            if i+6 in spots3:
-                return True
+    ##Lastly, check for type 'c' configurations.
+    #if len(stack) < 2:
+        #return False
+    #c = str(central_length)
+    ##Start with using an outer face as a central face of a subconfiguration.  (Only forms cAaBC and cAaBCD are necessary to check here, which also means no 'x's.)
+    #if full:
+        #for i in range(-1,len(stack)-1):
+            #a = str(stack[i])
+            #b = str(stack[i-1])
+            #d = str(stack[i+1])
+            #li = ['c'+a+'a'+b+c,'c'+a+'a'+c+b,'c'+a+'a'+c+d,'c'+a+'a'+d+c,'c'+a+'a'+b+c+d,'c'+a+'a'+d+c+b]
+            #for name in li:
+                #if name in ReducibleListC:
+                    #return True
+    #else:
+        #if 'c'+str(stack[0])+'a'+str(stack[1])+c in ReducibleListC:
+            #return True
+        #if 'c'+str(stack[0])+'a'+c+str(stack[1]) in ReducibleListC:
+            #return True
+        #for i in range(1,len(stack)-1):
+            #a = str(stack[i])
+            #b = str(stack[i-1])
+            #d = str(stack[i+1])
+            #li = ['c'+a+'a'+b+c,'c'+a+'a'+c+b,'c'+a+'a'+c+d,'c'+a+'a'+d+c,'c'+a+'a'+b+c+d,'c'+a+'a'+d+c+b]
+            #for name in li:
+                #if name in ReducibleListC:
+                    #return True
+        #if 'c'+str(stack[-1])+'a'+str(stack[-2])+c in ReducibleListC:
+            #return True
+        #if 'c'+str(stack[-1])+'a'+c+str(stack[-2]) in ReducibleListC:
+            #return True
+    ##Now use the central face as the central face of the subconfiguration.  (For non-'x's -- which means two or three outer faces in the subconfiguration.)
+    #if full:
+        #for i in range(len(stack)):
+            #b = str(stack[i-2])
+            #a = str(stack[i-1])
+            #d = str(stack[i])
+            #li = ['c'+c+'a'+a+d,'c'+c+'a'+d+a,'c'+c+'a'+b+a+d,'c'+c+'a'+d+a+b]
+            #for name in li:
+                #if name in ReducibleListC:
+                    #return True
+    #else:
+        #if 'c'+c+'a'+str(stack[0])+str(stack[1]) in ReducibleListC:
+            #return True
+        #if 'c'+c+'a'+str(stack[1])+str(stack[0]) in ReducibleListC:
+            #return True
+        #for i in range(2,len(stack)):
+            #b = str(stack[i-2])
+            #a = str(stack[i-1])
+            #d = str(stack[i])
+            #li = ['c'+c+'a'+a+d,'c'+c+'a'+d+a,'c'+c+'a'+b+a+d,'c'+c+'a'+d+a+b]
+            #for name in li:
+                #if name in ReducibleListC:
+                    #return True
+    ##Now use the central face as the central face of the subconfiguration.  (For 'x's.  Each configuration manually coded.)
+    #if len(stack) < 4:
+        #return False
+    #stack_list = stack[:]
+    #for i in range(central_length-len(stack)):
+        #stack_list.append('x')
+    #stack_list.extend(stack[:])
+    #if central_length == 5:#c5a55x6
+        #spots5 = [i for i,x in enumerate(stack) if x==5]
+        #spots6 = [i for i,x in enumerate(stack) if x==6]
+        #for i in [x for x in spots5 if x<5]:
+            #if i+1 in spots5 and i+3 in spots6:
+                #return True
+        #for i in [x for x in spots6 if x<5]:
+            #if i+2 in spots5 and i+3 in spots5:
+                #return True
+    #elif central_length == 6:#c6a4xx4
+        #spots4 = [i for i,x in enumerate(stack) if x==4]
+        #for i in [x for x in spots4 if x<6]:
+            #if i+3 in spots4:
+                #return True
+    #elif central_length == 7:#c7a3xx4, c7a3xx5, c7a4xx4, c7a55x5
+        #spots3 = [i for i,x in enumerate(stack) if x==3]
+        #spots4 = [i for i,x in enumerate(stack) if x==4]
+        #spots5 = [i for i,x in enumerate(stack) if x==5]
+        #for i in [x for x in spots3 if x<7]:
+            #if i+3 in spots4 or i+3 in spots5:#3xx4, 3xx5
+                #return True
+        #for i in [x for x in spots4 if x<7]:
+            #if i+3 in spots3 or i+3 in spots4:#4xx3, 4xx4
+                #return True
+        #for i in [x for x in spots5 if x<7]:
+            #if i+3 in spots3:#5xx3
+                #return True
+            #if i+3 in spots5 and (i+1 in spots5 or i+2 in spots5):#55x5
+                #return True
+    #elif central_length == 8:#c8a3xx4, c8a3xxx4, c8a3x55x55, c8a4xx4, c8a4xxx4
+        #spots3 = [i for i,x in enumerate(stack) if x==3]
+        #spots4 = [i for i,x in enumerate(stack) if x==4]
+        #spots5 = [i for i,x in enumerate(stack) if x==5]
+        #for i in [x for x in spots3 if x<8]:
+            #if i+3 in spots4 or i+4 in spots4:#3xx4, 3xxx4
+                #return True
+            #if i+2 in spots5 and i+3 in spots5 and i+5 in spots5 and i+6 in spots5:#3x55x55
+                #return True
+        #for i in [x for x in spots4 if x<8]:
+            #if i+3 in spots3 or i+4 in spots3 or i+3 in spots4 or i+4 in spots4:#4xx3, 4xxx3, 4xx4, 4xxx4
+                #return True
+        #for i in [x for x in spots5 if x<8]:
+            #if i+6 in spots3 and i+1 in spots5 and i+3 in spots5 and i+4 in spots5:#55x55x3
+                #return True
+    #elif central_length == 9:#c9a3xx4, c9a3xxx4
+        #spots3 = [i for i,x in enumerate(stack) if x==3]
+        #spots4 = [i for i,x in enumerate(stack) if x==4]
+        #for i in [x for x in spots3 if x<9]:
+            #if i+3 in spots4 or i+4 in spots4:#3xx4, 3xxx4
+                #return True
+        #for i in [x for x in spots4 if x<9]:
+            #if i+3 in spots3 or i+4 in spots3:#4xx3, 4xxx3
+                #return True
+    #elif central_length == 10:#c10a3xxx4, c10a3xxxx3, c10a3xxxx4
+        #spots3 = [i for i,x in enumerate(stack) if x==3]
+        #spots4 = [i for i,x in enumerate(stack) if x==4]
+        #for i in [x for x in spots3 if x<10]:
+            #if i+4 in spots4 or i+5 in spots3 or i+5 in spots4:#3xxx4, 3xxxx3, 3xxxx4
+                #return True
+        #for i in [x for x in spots4 if x<10]:
+            #if i+4 in spots3 or i+5 in spots3:#4xxx3, 4xxxx3
+                #return True
+    #elif central_length == 11:#c11a3xxxx3
+        #spots3 = [i for i,x in enumerate(stack) if x==3]
+        #for i in [x for x in spots3 if x<11]:
+            #if i+5 in spots3:
+                #return True
+    #elif central_length == 12:#c12a3xxxxx3
+        #spots3 = [i for i,x in enumerate(stack) if x==3]
+        #for i in [x for x in spots3 if x<12]:
+            #if i+6 in spots3:
+                #return True
     
-    #After all that, we've got nothing left.
-    return False
+    ##After all that, we've got nothing left.
+    #return False
 
 
-#Takes a list of tuples (of lengths of outer faces) and removes duplicates (under cyclic rotation and reversal).
-#Does not change in place -- creates new list from scratch and leaves input unaltered.
-def simmer(input_list):
-    keys = []
-    new_list = []
-    for t in input_list:
-        s = ''
-        for x in t:
-            s += str(x)
-        r = ''
-        for x in reversed(t):
-            r += str(x)
+##Takes a list of tuples (of lengths of outer faces) and removes duplicates (under cyclic rotation and reversal).
+##Does not change in place -- creates new list from scratch and leaves input unaltered.
+#def simmer(input_list):
+    #keys = []
+    #new_list = []
+    #for t in input_list:
+        #s = ''
+        #for x in t:
+            #s += str(x)
+        #r = ''
+        #for x in reversed(t):
+            #r += str(x)
         
-        dup = False
-        for key in keys:
-            if s in key or r in key:
-                dup = True
-                break
+        #dup = False
+        #for key in keys:
+            #if s in key or r in key:
+                #dup = True
+                #break
         
-        if not dup:
-            t_key = s+s[:-1]
-            keys.append(t_key)
-            new_list.append(t)
+        #if not dup:
+            #t_key = s+s[:-1]
+            #keys.append(t_key)
+            #new_list.append(t)
         
-    return new_list
+    #return new_list
 
 
 
 
-#Current Rules:
-#Every 3-face takes 1 charge from each adjacent face.
-#If a 4-face is adjacent to at least three (7+)-faces, then it takes 2/3 charge from each adjacent (7+)-face.
-#If a 4-face is not adjacent to at least three (7+)-faces, then it takes 1 charge from each adjacent (9+)-face.
-#If a 5-face is adjacent to at least three (7+)-faces, then it takes 1/3 charge from each adjacent (7+)-face.
-#If a 5-face is not adjacent to at least three (7+)-faces, then it takes 1/2 charge from each adjacent (8+)-face.
-def happy(central_length,outer_lengths):
-    if central_length == 3:
-        #Every 3-face takes 1 charge from each adjacent face.
-        return True
+##Current Rules:
+##Every 3-face takes 1 charge from each adjacent face.
+##If a 4-face is adjacent to at least three (7+)-faces, then it takes 2/3 charge from each adjacent (7+)-face.
+##If a 4-face is not adjacent to at least three (7+)-faces, then it takes 1 charge from each adjacent (9+)-face.
+##If a 5-face is adjacent to at least three (7+)-faces, then it takes 1/3 charge from each adjacent (7+)-face.
+##If a 5-face is not adjacent to at least three (7+)-faces, then it takes 1/2 charge from each adjacent (8+)-face.
+#def happy(central_length,outer_lengths):
+    #if central_length == 3:
+        ##Every 3-face takes 1 charge from each adjacent face.
+        #return True
     
-    if central_length == 4:
-        n7p = len([i for i,x in enumerate(outer_lengths) if x >= 7])
-        #If a 4-face is adjacent to at least three (7+)-faces, then it takes 2/3 charge from each adjacent (7+)-face.
-        if n7p >= 3:
-            return True
-        #If a 4-face is not adjacent to at least three (7+)-faces, then it takes 1 charge from each adjacent (9+)-face.
-        else:
-            n9p = len([i for i,x in enumerate(outer_lengths) if x >= 9])
-            if n9p >= 2:
-                return True
-            else:
-                return False
+    #if central_length == 4:
+        #n7p = len([i for i,x in enumerate(outer_lengths) if x >= 7])
+        ##If a 4-face is adjacent to at least three (7+)-faces, then it takes 2/3 charge from each adjacent (7+)-face.
+        #if n7p >= 3:
+            #return True
+        ##If a 4-face is not adjacent to at least three (7+)-faces, then it takes 1 charge from each adjacent (9+)-face.
+        #else:
+            #n9p = len([i for i,x in enumerate(outer_lengths) if x >= 9])
+            #if n9p >= 2:
+                #return True
+            #else:
+                #return False
     
-    if central_length == 5:
-        n7p = len([i for i,x in enumerate(outer_lengths) if x >= 7])
-        #If a 5-face is adjacent to at least three (7+)-faces, then it takes 1/3 charge from each adjacent (7+)-face.
-        if n7p >= 3:
-            return True
-        #If a 5-face is not adjacent to at least three (7+)-faces, then it takes 1/2 charge from each adjacent (8+)-face.
-        else:
-            n8p = len([i for i,x in enumerate(outer_lengths) if x >= 8])
-            if n8p >= 2:
-                return True
-            else:
-                return False
+    #if central_length == 5:
+        #n7p = len([i for i,x in enumerate(outer_lengths) if x >= 7])
+        ##If a 5-face is adjacent to at least three (7+)-faces, then it takes 1/3 charge from each adjacent (7+)-face.
+        #if n7p >= 3:
+            #return True
+        ##If a 5-face is not adjacent to at least three (7+)-faces, then it takes 1/2 charge from each adjacent (8+)-face.
+        #else:
+            #n8p = len([i for i,x in enumerate(outer_lengths) if x >= 8])
+            #if n8p >= 2:
+                #return True
+            #else:
+                #return False
     
-    if central_length == 6:
-        return True
+    #if central_length == 6:
+        #return True
     
-    if central_length == 7:
-        n3 = len([i for i,x in enumerate(outer_lengths) if x == 3])
-        n4 = len([i for i,x in enumerate(outer_lengths) if x == 4])
-        n5 = len([i for i,x in enumerate(outer_lengths) if x == 5])
-        if 3*n3+2*n4+n5 <= 3:#Not an if and only if test.
-            return True
-        else:
-            return False
-    
-    if central_length == 8:
-        n3 = len([i for i,x in enumerate(outer_lengths) if x == 3])
-        n4 = len([i for i,x in enumerate(outer_lengths) if x == 4])
-        n5 = len([i for i,x in enumerate(outer_lengths) if x == 5])
-        if 6*n3+4*n4+3*n5 <= 12:#Not an if and only if test.
-            return True
-        else:
-            return False
-    
-    if central_length >= 9:
-        n3 = len([i for i,x in enumerate(outer_lengths) if x == 3])
-        n4 = len([i for i,x in enumerate(outer_lengths) if x == 4])
-        n5 = len([i for i,x in enumerate(outer_lengths) if x == 5])
-        if 2*n3+2*n4+n5 <= 2*(central_length-6):#Not an if and only if test.
-            return True
-        else:
-            return False
-
-
-
-
-
-
-
-##Checks if li_1 is majorized by li_2.  Assumes identical lengths and int entries.
-#def maj(li_1,li_2):
-    #for i in range(len(li_1)):
-        #if li_1[i] > li_2:
+    #if central_length == 7:
+        #n3 = len([i for i,x in enumerate(outer_lengths) if x == 3])
+        #n4 = len([i for i,x in enumerate(outer_lengths) if x == 4])
+        #n5 = len([i for i,x in enumerate(outer_lengths) if x == 5])
+        #if 3*n3+2*n4+n5 <= 3:#Not an if and only if test.
+            #return True
+        #else:
             #return False
-    #return True
+    
+    #if central_length == 8:
+        #n3 = len([i for i,x in enumerate(outer_lengths) if x == 3])
+        #n4 = len([i for i,x in enumerate(outer_lengths) if x == 4])
+        #n5 = len([i for i,x in enumerate(outer_lengths) if x == 5])
+        #if 6*n3+4*n4+3*n5 <= 12:#Not an if and only if test.
+            #return True
+        #else:
+            #return False
+    
+    #if central_length >= 9:
+        #n3 = len([i for i,x in enumerate(outer_lengths) if x == 3])
+        #n4 = len([i for i,x in enumerate(outer_lengths) if x == 4])
+        #n5 = len([i for i,x in enumerate(outer_lengths) if x == 5])
+        #if 2*n3+2*n4+n5 <= 2*(central_length-6):#Not an if and only if test.
+            #return True
+        #else:
+            #return False
 
 
 
-#c5a55x6 = RedCon([(0,1),(1,2),(2,3),(3,4),(4,5),(5,6),(6,7),(7,8),(8,9),(9,10),(10,11),(11,12),(12,13),(2,7),(8,0),(11,0),(13,1)],'c5a55x6')
 
 
 
 
+###Checks if li_1 is majorized by li_2.  Assumes identical lengths and int entries.
+##def maj(li_1,li_2):
+    ##for i in range(len(li_1)):
+        ##if li_1[i] > li_2:
+            ##return False
+    ##return True
 
 
 
+##c5a55x6 = RedCon([(0,1),(1,2),(2,3),(3,4),(4,5),(5,6),(6,7),(7,8),(8,9),(9,10),(10,11),(11,12),(12,13),(2,7),(8,0),(11,0),(13,1)],'c5a55x6')
 
 
 
@@ -859,169 +852,176 @@ def happy(central_length,outer_lengths):
 
 
 
-#Reducible configurations.
-#---------------------------------------
 
-#First entry is filler to shift indices to match with SGE task IDs.
-StandardRedConList = [None,
-'c3a3',
-'cxa3x3',
-'cxa3xx3',
-'cxa3xxx3',
-'cxa3xx4x3',
-'cxa3xx5x3',
-'cxa3xx6x3',
-'cxa3xxx73',
-'cxa3xx4xx3',
-'cxa3xxx4x3',
-'cxa3xxx5x3',
-'cxa3xxx6x3',
-'cxa3xxxx73',
-'cxa3xxx4xx3',
-'cxa3xxxx4xx3',
-'c3a4',
-'cxa3x4',
-'cxa3x54',
-'cxa3x64',
-'cxa3x74',
-'cxa37x4',
-'cxa3xx54',
-'cxa3xx64',
-'cxa3xx74',
-'cxa3x5x4',
-'cxa3x6x4',
-'cxa37xx4',
-'cxa3xxx54',
-'cxa3xxx64',
-'cxa3xxx74',
-'cxa3xx4x4',
-'cxa3xx6x4',
-'cxa3x55x4',
-'cxa3x57x4',
-'cxa3x65x4',
-'cxa3x75x4',
-'cxa3xx4xx4',
-'c3a5',
-'cxa375',
-'cxa3775',
-'cxa3xx45',
-'cxa3x555',
-'cxa3x575',
-'cxa3x655',
-'cxa3x675',
-'cxa3x765',
-'cxa3xxx45',
-'c3a6',
-'cxa376',
-'cxa3x56',
-'cxa3x66',
-'cxa3776',
-'cxa3xx46',
-'cxa3xx66',
-'cxa3x556',
-'cxa3x576',
-'cxa3x656',
-'cxa3x676',
-'cxa3xxx46',
-'c4a4',
-'cxa454',
-'cxa464',
-'cxa474',
-'cxa4x54',
-'cxa4x64',
-'cxa4x74',
-'cxa4xx54',
-'cxa4x55x4',
-'cxa4x56x4',
-'cxa4x66x4',
-'cxa45xx54',
-'cxa45xxx54',
-'cxa4x4x4x4',
-'cxa455',
-'cxa465',
-'cxa4x45',
-'cxa4575',
-'cxa4755',
-'cxa4775',
-'cxa4x555',
-'cxa45xxxx545',
-'cxa456',
-'cxa466',
-'cxa476',
-'cxa4x46',
-'cxa4576',
-'cxa4756',
-'cxa5475',
-'cxa5565',
-'cxa555555',
-'cxa546',
-'cxa5476',
-'cxa5746',
-'cxa5666',
-'c4a55',
-'c4a56',
-'c4a57',
-'c4a66',
-'c4a585',
-'c4a676',
-'c4a677',
-'c4a686',
-'c5a555',
-'c5a556',
-'c5a557',
-'c5a565',
-'c5a566',
-'c5a567',
-'c5a575',
-'c5a576',
-'c5a577',
-'c5a656',
-'c5a657',
-'c5a666',
-'c5a667',
-'c5a676',
-'c5a757',
-'c3a777',
-'c4a6787',
-'c4a7777',
-'c5a5x65',
-'c5a5585',
-'c5a5775',
-'c5a5785',
-'c5a5x66',
-'c5a55x6',
-'c5a56x6',
-'c5a57x6',
-'c5a5777',
-'c5a5857',
-'c5a6x66',
-'c5a6776',
-'c5a7577',
-'c5a67777',
-'c5a77777',
-'c6a4xx4',
-'c7a3xx4',
-'c7a3xx5',
-'c7a4xx4',
-'c7a4x55',
-'c7a4xx55',
-'c7a4x5x5',
-'c7a4x5xx5',
-'c7a55x5',
-'c8a3xx4',
-'c8a3xxx4',
-'c8a4xx4',
-'c8a4xxx4',
-'c8a3x55x55',
-'c9a3xx4',
-'c9a3xxx4',
-'c9a545x5',
-'c9a555x55x5',
-'c10a3xxxx3',
-'c10a3xxx4',
-'c10a3xxxx4',
-'c11a3xxxx3',
-'c12a3xxxxx3']
+
+
+
+
+
+
+##Reducible configurations.
+##---------------------------------------
+
+##First entry is filler to shift indices to match with SGE task IDs.
+#StandardRedConList = [None,
+#'c3a3',
+#'cxa3x3',
+#'cxa3xx3',
+#'cxa3xxx3',
+#'cxa3xx4x3',
+#'cxa3xx5x3',
+#'cxa3xx6x3',
+#'cxa3xxx73',
+#'cxa3xx4xx3',
+#'cxa3xxx4x3',
+#'cxa3xxx5x3',
+#'cxa3xxx6x3',
+#'cxa3xxxx73',
+#'cxa3xxx4xx3',
+#'cxa3xxxx4xx3',
+#'c3a4',
+#'cxa3x4',
+#'cxa3x54',
+#'cxa3x64',
+#'cxa3x74',
+#'cxa37x4',
+#'cxa3xx54',
+#'cxa3xx64',
+#'cxa3xx74',
+#'cxa3x5x4',
+#'cxa3x6x4',
+#'cxa37xx4',
+#'cxa3xxx54',
+#'cxa3xxx64',
+#'cxa3xxx74',
+#'cxa3xx4x4',
+#'cxa3xx6x4',
+#'cxa3x55x4',
+#'cxa3x57x4',
+#'cxa3x65x4',
+#'cxa3x75x4',
+#'cxa3xx4xx4',
+#'c3a5',
+#'cxa375',
+#'cxa3775',
+#'cxa3xx45',
+#'cxa3x555',
+#'cxa3x575',
+#'cxa3x655',
+#'cxa3x675',
+#'cxa3x765',
+#'cxa3xxx45',
+#'c3a6',
+#'cxa376',
+#'cxa3x56',
+#'cxa3x66',
+#'cxa3776',
+#'cxa3xx46',
+#'cxa3xx66',
+#'cxa3x556',
+#'cxa3x576',
+#'cxa3x656',
+#'cxa3x676',
+#'cxa3xxx46',
+#'c4a4',
+#'cxa454',
+#'cxa464',
+#'cxa474',
+#'cxa4x54',
+#'cxa4x64',
+#'cxa4x74',
+#'cxa4xx54',
+#'cxa4x55x4',
+#'cxa4x56x4',
+#'cxa4x66x4',
+#'cxa45xx54',
+#'cxa45xxx54',
+#'cxa4x4x4x4',
+#'cxa455',
+#'cxa465',
+#'cxa4x45',
+#'cxa4575',
+#'cxa4755',
+#'cxa4775',
+#'cxa4x555',
+#'cxa45xxxx545',
+#'cxa456',
+#'cxa466',
+#'cxa476',
+#'cxa4x46',
+#'cxa4576',
+#'cxa4756',
+#'cxa5475',
+#'cxa5565',
+#'cxa555555',
+#'cxa546',
+#'cxa5476',
+#'cxa5746',
+#'cxa5666',
+#'c4a55',
+#'c4a56',
+#'c4a57',
+#'c4a66',
+#'c4a585',
+#'c4a676',
+#'c4a677',
+#'c4a686',
+#'c5a555',
+#'c5a556',
+#'c5a557',
+#'c5a565',
+#'c5a566',
+#'c5a567',
+#'c5a575',
+#'c5a576',
+#'c5a577',
+#'c5a656',
+#'c5a657',
+#'c5a666',
+#'c5a667',
+#'c5a676',
+#'c5a757',
+#'c3a777',
+#'c4a6787',
+#'c4a7777',
+#'c5a5x65',
+#'c5a5585',
+#'c5a5775',
+#'c5a5785',
+#'c5a5x66',
+#'c5a55x6',
+#'c5a56x6',
+#'c5a57x6',
+#'c5a5777',
+#'c5a5857',
+#'c5a6x66',
+#'c5a6776',
+#'c5a7577',
+#'c5a67777',
+#'c5a77777',
+#'c6a4xx4',
+#'c7a3xx4',
+#'c7a3xx5',
+#'c7a4xx4',
+#'c7a4x55',
+#'c7a4xx55',
+#'c7a4x5x5',
+#'c7a4x5xx5',
+#'c7a55x5',
+#'c8a3xx4',
+#'c8a3xxx4',
+#'c8a4xx4',
+#'c8a4xxx4',
+#'c8a3x55x55',
+#'c9a3xx4',
+#'c9a3xxx4',
+#'c9a545x5',
+#'c9a555x55x5',
+#'c10a3xxxx3',
+#'c10a3xxx4',
+#'c10a3xxxx4',
+#'c11a3xxxx3',
+#'c12a3xxxxx3']
 
 
 
@@ -1492,4 +1492,51 @@ def check_stem_identifications(rc_str):
         print "Complete:  "+rc_str+" is GOOD."
     else:
         print "Complete:  "+rc_str+" is BAD."
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#--------------------------Stuff for Hopeful Reducible Configurations---------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
