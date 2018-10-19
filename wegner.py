@@ -1441,10 +1441,15 @@ def configuration_identifier(underlying_graph,identifications):
 import choosability as ch
 import time
 
-def check_stem_identifications(rc_str):
-    print "-"*30+rc_str+"-"*30
-    rc = makeRedCon(rc_str)
+#For now, outer lists are all one region.  Change to be multiple regions.
+#If rc_str is something makeRedCon can't parse, then edges and outer_lists must be submitted.
+def check_stem_identifications(rc_str,edges=False,outer_lists=[]):
     begin = time.clock()
+    print "-"*30+rc_str+"-"*30
+    if edges:
+        rc = RedCon(edges,rc_str)
+    else:
+        rc = makeRedCon(rc_str)
     count = 0
     good_count = 0
     bad_count = 0
@@ -1452,7 +1457,23 @@ def check_stem_identifications(rc_str):
     count_dict = {s:0 for s in keys}
     bad_li = []
     
-    li,dist1,dist2 = get_roots_cyclic(rc_str)
+    if outer_lists:
+        li = outer_lists[:]
+        G = Graph(rc.underlying_graph)
+        twos = li
+        dist1 = []
+        dist2 = []
+        for i in range(len(twos)):
+            u = twos[i]
+            for j in range(i+1,len(twos)):
+                v = twos[j]
+                d = G.distance(u,v)
+                if d == 1:
+                    dist1.append(set([u,v]))
+                elif d == 2:
+                    dist2.append(set([u,v]))
+    else:
+        li,dist1,dist2 = get_roots_cyclic(rc_str)
     
     for idents in identification_generator(li,dist1,dist2):
         count += 1
@@ -1717,11 +1738,214 @@ StemIdentificationBads = [
 ]
 
 
-UsedInHappy3 = set(['c3a3','c3a4','c3a5','c3a6'])
+UsedInHappy3 = set(['c3a3','c3a4','c3a55','c3a57','c3a6'])
 UsedInHappy4 = set(['c3a4','c4a4','c4a55','c4a56','c4a57','c4a585','cxa546','c4a66','c4a676','c4a686'])
-UsedInHappy5 = set(['c3a5','c4a4','cxa454','c4a55','c4a56','cxa455','cxa456','c5a555','c5a556','c5a557','c5a5585','c5a55x6','c5a565','c5a5x65','c5a666','c5a56x6','c5a656','c5a566','c5a5x66','c5a6x66'])
+UsedInHappy5 = set(['c3a3','c3a4','cxa3x3','cxa3x4','c3a55','cxa355','c3a6','cxa356','c4a4','cxa454','c4a55','c4a56','c5a4x55','cxa456','c5a555','c5a556','c5a575','c5a5585','c5a55x6','c5a565','c5a5x65','c5a666','c5a56x6','c5a656','c5a566','c5a5x66','c5a6x66'])
 UsedInDischarging4 = set(['cxa464'])
-UsedInDischarging5 = set([])
+UsedInDischarging5 = set(['cxa355','cxa356'])
+
+
+
+
+
+
+#HRCs = ['c3a3',
+#'cxa3x3',
+#'cxa3xx3',
+#'cxa3xxx3',
+#'cxa3xx4x3',
+#'cxa3xx5x3',
+#'cxa3xx6x3',
+#'cxa3xxx73',
+#'cxa3xx4xx3',
+#'cxa3xxx4x3',
+#'cxa3xxx5x3',
+#'cxa3xxx6x3',
+#'cxa3xxxx73',
+#'cxa3xxx4xx3',
+##'cxa3xxxx4xx3', #(Bad stem identification.)
+#'c3a4',
+#'cxa3x4',
+#'cxa3x54',
+#'cxa3x64',
+#'cxa3x74',
+#'cxa37x4',
+#'cxa3xx54',
+#'cxa3xx64',
+#'cxa3xx74',
+#'cxa3x5x4',
+#'cxa3x6x4',
+##'cxa37xx4', #(Bad stem identification.)
+#'cxa3xxx54',
+#'cxa3xxx64',
+##'cxa3xxx74', #(Bad stem identification.)
+#'cxa3xx4x4',
+##'cxa3xx6x4', #(Bad stem identification.)
+#'cxa3x55x4',
+#'cxa3x57x4',
+#'cxa3x65x4',
+#'cxa3x75x4',
+##'cxa3xx4xx4', #(Bad stem identification.)
+##'c3a5', #(Bad stem identification.)
+#'cxa375',
+#'cxa3775',
+#'cxa3xx45',
+#'cxa3x555',
+#'cxa3x575',
+#'cxa3x655',
+#'cxa3x675',
+#'cxa3x765',
+#'cxa3xxx45',
+#'c3a6',
+#'cxa376',
+#'cxa3x56',
+#'cxa3x66',
+#'cxa3776',
+#'cxa3xx46',
+#'cxa3xx66',
+#'cxa3x556',
+#'cxa3x576',
+#'cxa3x656',
+#'cxa3x676',
+#'cxa3xxx46',
+#'c4a4',
+#'cxa454',
+#'cxa464',
+#'cxa474',
+#'cxa4x54',
+#'cxa4x64',
+##'cxa4x74', #(Bad stem identification.)
+##'cxa4xx54', #(Bad stem identification.)
+#'cxa4x55x4',
+#'cxa4x56x4',
+#'cxa4x66x4',
+#'cxa45xx54',
+#'cxa45xxx54',
+#'cxa4x4x4x4',
+##'cxa455', #(Bad stem identification.)
+#'cxa465',
+#'cxa4x45',
+#'cxa4575',
+#'cxa4755',
+#'cxa4775',
+##'cxa4x555', #(Bad stem identification.)
+#'cxa45xxxx545',
+#'cxa456',
+#'cxa466',
+#'cxa476',
+#'cxa4x46',
+#'cxa4576',
+#'cxa4756',
+#'cxa5475',
+##'cxa5565', #(Bad stem identification.)
+#'cxa555555',
+#'cxa546',
+#'cxa5476',
+#'cxa5746',
+#'cxa5666',
+#'c4a55',
+#'c4a56',
+#'c4a57',
+#'c4a66',
+#'c4a585',
+#'c4a676',
+#'c4a677',
+#'c4a686',
+#'c5a555',
+#'c5a556',
+##'c5a557', #(Bad stem identification.)
+#'c5a565',
+#'c5a566',
+#'c5a567',
+#'c5a575',
+#'c5a576',
+#'c5a577',
+#'c5a656',
+#'c5a657',
+#'c5a666',
+#'c5a667',
+#'c5a676',
+##'c5a757', #(Bad stem identification.)
+#'c3a777',
+#'c4a6787',
+#'c4a7777',
+#'c5a5x65',
+#'c5a5585',
+#'c5a5775',
+#'c5a5785',
+#'c5a5x66',
+#'c5a55x6',
+#'c5a56x6',
+#'c5a57x6',
+#'c5a5777',
+#'c5a5857',
+#'c5a6x66',
+#'c5a6776',
+#'c5a7577',
+#'c5a67777',
+#'c5a77777',
+#'c6a4xx4',
+#'c7a3xx4',
+#'c7a3xx5',
+#'c7a4xx4',
+#'c7a4x55',
+#'c7a4xx55',
+##'c7a4x5x5', #(Bad stem identification.)
+#'c7a4x5xx5',
+#'c7a55x5',
+#'c8a3xx4',
+#'c8a3xxx4',
+##'c8a4xx4', #(Bad stem identification.)
+##'c8a4xxx4', #(Bad stem identification.)
+#'c8a3x55x55',
+#'c8a4555',
+#'c8a45xx4',
+#'c8a455xx4',
+#'c8a455x5',
+#'c8a45x55',
+#'c8a4x5x4x4',
+#'c8a4x4x555',
+#'c8a4x55555',
+#'c9a3xx4',
+#'c9a3xxx4',
+#'c9a45x55',
+#'c9a455x4',
+#'c9a455x5',
+#'c9a455xx4',
+#'c9a4555',
+#'c9a545x5',
+#'c9a555x55x5',
+#'c10a3xxxx3',
+##'c10a3xxx4', #(Bad stem identification.)
+#'c10a3xxxx4',
+#'c11a3xxxx3',
+#'c12a3xxxxx3',
+#'cxa4x555x4',
+#'cxa4x5555',
+##'cxa4554',#Redundant because of cxa4x54
+#'cxa4555',
+#'cxa5455',
+#'c5a4x55',
+#'c5a4x56',
+#'cxa355',
+#'cxa356',
+#'cxa535',
+#'cxa35x4',
+#'c3a55',
+#'c3a57',
+#'c8a35x5',
+#'c8a35xx5',
+#'c8a35xxx5',
+#'c8a35xxxx5',
+#'c9a35x5'
+#]
+
+
+#MiscRedConList = ['cxa5(5)555',
+#'cxa5(6)555',
+#'cxa55(5)55',
+#'cxa555555',
+#'cxa55555(5)']
 
 
 
@@ -1729,191 +1953,104 @@ UsedInDischarging5 = set([])
 
 
 
-HRCs = ['c3a3',
+HRCs =[
+'c3a3',
 'cxa3x3',
 'cxa3xx3',
 'cxa3xxx3',
-'cxa3xx4x3',
 'cxa3xx5x3',
-'cxa3xx6x3',
-'cxa3xxx73',
-'cxa3xx4xx3',
-'cxa3xxx4x3',
-'cxa3xxx5x3',
-'cxa3xxx6x3',
-'cxa3xxxx73',
-'cxa3xxx4xx3',
-'cxa3xxxx4xx3', #(Bad stem identification.)
 'c3a4',
 'cxa3x4',
 'cxa3x54',
-'cxa3x64',
-'cxa3x74',
-'cxa37x4',
 'cxa3xx54',
-'cxa3xx64',
-'cxa3xx74',
-'cxa3x5x4',
-'cxa3x6x4',
-'cxa37xx4', #(Bad stem identification.)
 'cxa3xxx54',
-'cxa3xxx64',
-'cxa3xxx74', #(Bad stem identification.)
-'cxa3xx4x4',
-'cxa3xx6x4', #(Bad stem identification.)
-'cxa3x55x4',
-'cxa3x57x4',
-'cxa3x65x4',
-'cxa3x75x4',
-'cxa3xx4xx4', #(Bad stem identification.)
-'c3a5', #(Bad stem identification.)
 'cxa375',
-'cxa3775',
-'cxa3xx45',
 'cxa3x555',
-'cxa3x575',
-'cxa3x655',
-'cxa3x675',
-'cxa3x765',
-'cxa3xxx45',
 'c3a6',
-'cxa376',
-'cxa3x56',
-'cxa3x66',
-'cxa3776',
-'cxa3xx46',
-'cxa3xx66',
-'cxa3x556',
-'cxa3x576',
-'cxa3x656',
-'cxa3x676',
-'cxa3xxx46',
 'c4a4',
 'cxa454',
 'cxa464',
 'cxa474',
 'cxa4x54',
-'cxa4x64',
-'cxa4x74', #(Bad stem identification.)
-'cxa4xx54', #(Bad stem identification.)
 'cxa4x55x4',
-'cxa4x56x4',
-'cxa4x66x4',
-'cxa45xx54',
-'cxa45xxx54',
 'cxa4x4x4x4',
-'cxa455', #(Bad stem identification.)
-'cxa465',
 'cxa4x45',
-'cxa4575',
-'cxa4755',
-'cxa4775',
-'cxa4x555', #(Bad stem identification.)
-'cxa45xxxx545',
 'cxa456',
-'cxa466',
-'cxa476',
-'cxa4x46',
-'cxa4576',
-'cxa4756',
-'cxa5475',
-'cxa5565', #(Bad stem identification.)
 'cxa555555',
 'cxa546',
-'cxa5476',
-'cxa5746',
-'cxa5666',
 'c4a55',
 'c4a56',
 'c4a57',
 'c4a66',
 'c4a585',
 'c4a676',
-'c4a677',
 'c4a686',
 'c5a555',
 'c5a556',
-'c5a557', #(Bad stem identification.)
 'c5a565',
 'c5a566',
-'c5a567',
 'c5a575',
-'c5a576',
-'c5a577',
 'c5a656',
-'c5a657',
 'c5a666',
-'c5a667',
-'c5a676',
-'c5a757', #(Bad stem identification.)
-'c3a777',
-'c4a6787',
-'c4a7777',
 'c5a5x65',
 'c5a5585',
-'c5a5775',
-'c5a5785',
 'c5a5x66',
 'c5a55x6',
 'c5a56x6',
-'c5a57x6',
-'c5a5777',
-'c5a5857',
 'c5a6x66',
-'c5a6776',
-'c5a7577',
-'c5a67777',
-'c5a77777',
-'c6a4xx4',
 'c7a3xx4',
 'c7a3xx5',
 'c7a4xx4',
 'c7a4x55',
 'c7a4xx55',
-'c7a4x5x5', #(Bad stem identification.)
 'c7a4x5xx5',
 'c7a55x5',
 'c8a3xx4',
 'c8a3xxx4',
-'c8a4xx4', #(Bad stem identification.)
-'c8a4xxx4', #(Bad stem identification.)
 'c8a3x55x55',
-'c8a4555',
 'c8a45xx4',
-'c8a455xx4',
 'c8a455x5',
-'c8a45x55',
 'c8a4x5x4x4',
-'c8a4x4x555',
-'c8a4x55555',
 'c9a3xx4',
 'c9a3xxx4',
-'c9a45x55',
 'c9a455x4',
 'c9a455x5',
-'c9a455xx4',
-'c9a4555',
 'c9a545x5',
-'c9a555x55x5',
-'c10a3xxxx3',
-'c10a3xxx4', #(Bad stem identification.)
-'c10a3xxxx4',
-'c11a3xxxx3',
-'c12a3xxxxx3'
-]
+'cxa4x555x4',
+'cxa4x5555',
+'cxa4555',
+'c5a4x55',
+'cxa355',
+'cxa356',
+'cxa535',
+'cxa35x4',
+'c3a55',
+'c3a57',
+'c8a35x5',
+'c8a35xx5',
+'c8a35xxx5',
+'c8a35xxxx5',
+'c9a35x5'
+    ]
 
 
-MiscRedConList = ['cxa5(5)555',
-'cxa5(6)555',
-'cxa55(5)55',
-'cxa555555',
-'cxa55555(5)']
 
 
 
 
 
-def initializeRedConList(exclusions):
+
+
+
+
+
+
+
+
+
+
+
+def initializeRedConList(huge,exclusions):
     RedConList = []
     for s in HRCs:
         if not s in exclusions:
@@ -1927,8 +2064,8 @@ def initializeRedConList(exclusions):
     #def makeInventories(StandardRedConList):
     #------------------------------------------------------------------------------------------------
     central_options = ['x',]
-    central_options.extend(range(3,13))
-    contain_options = range(3,13)
+    central_options.extend(range(3,huge+1))
+    contain_options = range(3,huge+1)
     # length_options = range(1,max_chain_length+1)
 
     ChainsDict = {}
@@ -2214,15 +2351,32 @@ def fnmatch_gen(substring, string):
 #A 5-face pulls at most 1/2 charge if the central face length is at least 9 and both its neighbors 
 # are 5-faces.  If we use crowns as reducible configurations (i.e., c5a55(5)55), then we can further 
 # restrict that this 5-face does not also have a 5-face two spots away.  Otherwise, pulls at most 1/3,
-# except when it is adjacent to a 4-face, in which case we know it pulls only 1/4 charge.
+# except when it is adjacent to a 4-face and no 5-face, in which case we know it pulls only 1/4 charge.
 #An alternative way of tabulating charge is by calculating charge by hand for nonreducible blocks.
 def final_charge(central_face_length,stack):
     charge = Fraction(0)
+    
+    #Checks if the configuration contains (is) c7a4x5x5.  If it is, then we have special
+    #knowledge:  4 pulls 1/2 and 5s pull 1/4.  So the 7-face is happy.
+    if central_face_length == 7 and 4 in stack and 5 in stack:
+        longstack = stack[:]
+        longstack.extend(longstack[:-1])
+        fours = [x for x in range(central_face_length) if stack[x] == 4]
+        fives = [x for x in range(len(longstack)) if longstack[x] == 5]
+        for i in fours:
+            if i+2 in fives and i+4 in fives:
+                return charge
+            if i+3 in fives and i+5 in fives:
+                return charge
+    
     charge += central_face_length-6
     
     threes = [x for x in range(central_face_length) if stack[x]==3]
     for i in threes:
-        charge -= 1
+        if 5 in [stack[i-1],stack[i+1-central_face_length]]:
+            charge -= Fraction(3,2)
+        else:
+            charge -= 1
     
     fours = [x for x in range(central_face_length) if stack[x]==4]
     for i in fours:
@@ -2235,8 +2389,10 @@ def final_charge(central_face_length,stack):
     
     fives = [x for x in range(central_face_length) if stack[x]==5]
     for i in fives:
-        nbrs = {y:len([x for x in [stack[i-1],stack[i+1-central_face_length]] if x==y]) for y in [4,5]}
-        if nbrs[4]>0:
+        nbrs = {y:len([x for x in [stack[i-1],stack[i+1-central_face_length]] if x==y]) for y in [3,4,5]}
+        if nbrs[3]>0:
+            charge -= Fraction(1,4)
+        elif nbrs[4]>0 and nbrs[5]==0:
             charge -= Fraction(1,4)
         elif nbrs[5]>=2 and central_face_length>=9:
             charge -= Fraction(1,2)
@@ -2255,7 +2411,19 @@ def charge_pull(stack):
     
     threes = [x for x in range(len(stack)) if stack[x]==3]
     for i in threes:
-        charge += 1
+        boo = False
+        if len(stack)==1:
+            pass
+        elif i==0 and stack[1]==5:
+            boo = True
+        elif i==len(stack)-1 and stack[-2]==5:
+            boo = True
+        elif 5 in [stack[i-1],stack[i+1]]:
+            boo=True
+        if boo:
+            charge += Fraction(3,2)
+        else:
+            charge += 1
     
     fours = [x for x in range(len(stack)) if stack[x]==4]
     for i in fours:
@@ -2264,14 +2432,16 @@ def charge_pull(stack):
     fives = [x for x in range(len(stack)) if stack[x]==5]
     for i in fives:
         if len(stack)==1:
-            nbrs = {4:0,5:0}
+            nbrs = {3:0,4:0,5:0}
         elif i==0:
-            nbrs = {y:len([x for x in [stack[1]] if x==y]) for y in [4,5]}
+            nbrs = {y:len([x for x in [stack[1]] if x==y]) for y in [3,4,5]}
         elif i==len(stack)-1:
-            nbrs = {y:len([x for x in [stack[-2]] if x==y]) for y in [4,5]}
+            nbrs = {y:len([x for x in [stack[-2]] if x==y]) for y in [3,4,5]}
         else:
-            nbrs = {y:len([x for x in [stack[i-1],stack[i+1]] if x==y]) for y in [4,5]}
-        if nbrs[4]>0:
+            nbrs = {y:len([x for x in [stack[i-1],stack[i+1]] if x==y]) for y in [3,4,5]}
+        if nbrs[3]>0:
+            charge += Fraction(1,4)
+        elif nbrs[4]>0 and nbrs[5]==0:
             charge += Fraction(1,4)
         elif nbrs[5]>=2:
             charge += Fraction(1,2)
@@ -2489,10 +2659,12 @@ def stack2str(stack):
 
 
 
-def run_discharging_analysis(huge,exclude=[]):
+def run_discharging_analysis(huge,exclude=[],show_graphs=False):
     #Initialize list and dictionaries of reducible configurations.
-    RedConList, ChainsDict, RCID, max_chain_length = initializeRedConList(exclude)
-    UsesDict = {s:[] for s in RedConList}
+    RedConList, ChainsDict, RCID, max_chain_length = initializeRedConList(huge,exclude)
+    UsedForSmallFacesHappy = UsedInHappy3 | UsedInHappy4 | UsedInHappy5
+    UsedForDischargingCalculations = UsedInDischarging4 | UsedInDischarging5
+    UsesDict = {s:[] for s in set(RedConList) | UsedForSmallFacesHappy | UsedForDischargingCalculations}
     for s in UsedInHappy3:
         UsesDict[s].append("3-Faces Are Happy")
     for s in UsedInHappy4:
@@ -2503,8 +2675,6 @@ def run_discharging_analysis(huge,exclude=[]):
         UsesDict[s].append("4-Faces Pull Limited Charge When Close")
     for s in UsedInDischarging5:
         UsesDict[s].append("5-Faces Pull Certain Charge")
-    UsedForSmallFacesHappy = UsedInHappy3 | UsedInHappy4 | UsedInHappy5
-    UsedForDischargingCalculations = UsedInDischarging4 | UsedInDischarging5
     
     #Initialize nonreducible_blocks.
     begin = time.clock()
@@ -2517,7 +2687,7 @@ def run_discharging_analysis(huge,exclude=[]):
     x = it.next()
     #print x
     for s in x:
-        UsesDict[s].append("Nonreducible Blocks for (%d+)-Faces"%(huge))
+        UsesDict[s].append("Nonreducible Blocks for All Faces")
 
     print "Nonreducible blocks of small faces (computed without a central face, \nwith reversals distinct):"
     for block in nonreducible_blocks:
@@ -2634,7 +2804,7 @@ def run_discharging_analysis(huge,exclude=[]):
     if small_happy_flag or discharge_calc_flag:
         print "*However, there is at least one problem:"
         if small_happy_flag:
-            print "   The following configurations were used to show small faces are happy\n   (and maybe calculate carge pull) but are missing from the list:"
+            print "   The following configurations were used to show small faces are happy\n   (and maybe calculate charge pull) but are missing from the list:"
             for s in missing1:
                 print "       "+s
         if discharge_calc_flag:
@@ -2677,12 +2847,103 @@ def run_discharging_analysis(huge,exclude=[]):
                 print "    * "+t
         else:
             print s+" was not used in the discharging analysis."
-        print "The underlying (induced) graph of "+s+" is shown below:"
-        rc = makeRedCon(s)
-        print "f:",rc.f
-        rc.underlying_graph.show()
+        if show_graphs:
+            print "The underlying (induced) graph of "+s+" is shown below:"
+            rc = makeRedCon(s)
+            print "f:",rc.f
+            rc.underlying_graph.show()
 
-    print "Time for printing graphs:  "+ch.timestring(time.clock()-rebegin)
+    if show_graphs:
+        print "Time for printing graphs:  "+ch.timestring(time.clock()-rebegin)
     return NotUsed
-#WARNING:  The final_charge and charge_pull routines assume all HRCs.
+
+
+
+
+
+
+
+
+
+
+
+def run_discharging_analysis_no_print(huge,exclude=[]):
+    #Initialize list and dictionaries of reducible configurations.
+    RedConList, ChainsDict, RCID, max_chain_length = initializeRedConList(huge,exclude)
+    UsedForSmallFacesHappy = UsedInHappy3 | UsedInHappy4 | UsedInHappy5
+    UsedForDischargingCalculations = UsedInDischarging4 | UsedInDischarging5
+    
+    #Initialize nonreducible_blocks.
+    nonreducible_blocks = []
+    it = nonreducible_block_generator(ChainsDict,RCID)
+    x = it.next()
+    while x != None:
+        nonreducible_blocks.append(x[:])
+        x = it.next()
+
+    unhappy_count = 0
+    for k in range(7,huge):
+        #Which blocks are still nonreducible for this length of central face?
+        new_blocks = []
+        for block in nonreducible_blocks:
+            boo = True
+            for i in range(len(block)):
+                x = reducible_check_last_face(k,block[:i+1],max_chain_length,ChainsDict,RCID)
+                if x[0]:
+                    boo = False
+                    break
+            if boo:
+                new_blocks.append(block[:])
+
+        #How can these blocks form full stacks around this central face length?
+        bag = []
+        it = nonreducible_block_stack_generator(k,new_blocks,max_chain_length,ChainsDict,RCID)
+        for x in it:
+            if x==None:
+                break
+            bag.append(x[:])
+
+        #Which ones pull too much charge?
+        unhappy_bag = []
+        for stack in bag:
+            if final_charge(k,stack) < 0:
+                return False
+                unhappy_bag.append(stack)
+        sim_bag = simmer(unhappy_bag)
+        unhappy_count += len(sim_bag)
+
+
+    a = int(huge-6)
+    b = int(huge)
+    avgchg = Fraction(a,b)#This was very persnickety -- wouldn't accept Fraction(huge-6,huge).
+    bad_count = 0
+    for block in nonreducible_blocks:
+        take = charge_pull(block)
+        le = len(block)+1
+        ma = le*avgchg
+        u = str(ma)
+        if take > ma:
+            return False
+            bad_count += 1
+    
+    
+
+    good = True
+    if unhappy_count > 0:
+        good = False
+    if bad_count > 0:
+        good = False
+    
+    small_happy_flag = False
+    for s in UsedForSmallFacesHappy:
+        if s not in RedConList:
+            small_happy_flag = True
+    discharge_calc_flag = False
+    for s in UsedForDischargingCalculations:
+        if s not in RedConList:
+            discharge_calc_flag = True
+    if small_happy_flag or discharge_calc_flag:
+        good = False
+    
+    return good
 
