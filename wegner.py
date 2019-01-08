@@ -1,3 +1,8 @@
+#Some things to-do:
+#    Fix the restrictions for unspecified spine identifications to match write-up.
+#    There should be a much simpler (more recursive) way of generating stem identifications.
+
+
 #------------------------------------------------------
 #CONTENTS
 #------------------------------------------------------
@@ -666,8 +671,8 @@ def configuration_realizations_print(configuration,include_induced=True,include_
     else:
         spine_ends = []
     di = {x:set([]) for x in range(g[0])}
-    for x in include_restrictions.keys():#What is this??
-        di[x] != set(include_restrictions[x])
+    for x in include_restrictions.keys():
+        di[x] |= set(include_restrictions[x])
     for v in range(g[0]):
         for face in [x for x in g[4] if v in x]:
             di[v] |= set(face)
