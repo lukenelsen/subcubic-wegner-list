@@ -1,8 +1,6 @@
 #Some things to-do (before going through line-by-line):
 #    Fix the restrictions for unspecified spine identifications to match write-up.
 #    There should be a much simpler (more recursive) way of generating stem identifications.
-#    Streamline printing
-#    Always include the induced realization.
 #    Add routine(s) for checking subgraph realizations.
 #    makeGraph vs. makeRedCon vs. RedCon
 
@@ -22,7 +20,6 @@
 
 #SECTION 2:  Facial Adjacency Structure Generation
 #    restricted_partitions
-#-    configuration_realizations_print
 #    configuration_FAS_generator
 #    nonidentified_faces
 #    get_cyclic_roots
@@ -579,7 +576,7 @@ import time
 import copy
 
 
-def configuration_FAS_generator(g,open_spine=False,include_induced=True,include_restrictions={}):
+def configuration_FAS_generator(g,open_spine=False,include_restrictions={}):
     if open_spine:
         spine_ends = [g[4][0][0],g[4][0][-1]]
     else:
@@ -651,14 +648,13 @@ def configuration_FAS_generator(g,open_spine=False,include_induced=True,include_
 #                     print g[4]
 #                     print nonid_faces
 #                     new_G.show()
-                    if include_induced or len(partition) < g[0]:
-                        countp += 1
-                        new_G.delete_vertices(range(n,i))
-                        print ">>> Realization #%d"%(countp)
-                        print ">>> Partition: %s"%(str(partition))
-                        print ">>> Edges: %s"%(str(new_G.edges()))
-                        yield new_G,[[id_dict[z] for z in x] for x in nonid_faces],partition,id_dict
-                        #print [[id_dict[z] for z in x] for x in nonid_faces]
+                    countp += 1
+                    new_G.delete_vertices(range(n,i))
+                    print ">>> Realization #%d"%(countp)
+                    print ">>> Partition: %s"%(str(partition))
+                    print ">>> Edges: %s"%(str(new_G.edges()))
+                    yield new_G,[[id_dict[z] for z in x] for x in nonid_faces],partition,id_dict
+                    #print [[id_dict[z] for z in x] for x in nonid_faces]
         if count % 100000 == 0:
             print " "*(12-len(str(count)))+str(count)+" "*(15-len(str(countp)))+str(countp)+"  "+ch.timestring(time.clock()-begin)
     end = time.clock()
@@ -1254,7 +1250,7 @@ def check_all_configuration_realizations(config_str):
         open_spine=True
     else:
         open_spine=False
-    check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,include_induced=True,partition_restrictions={},stem_restrictions=False)
+    check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,partition_restrictions={},stem_restrictions=False)
 
 
 
@@ -1274,11 +1270,11 @@ def check_all_configuration_realizations(config_str):
 #stem_restrictions[0] holds vert:{set of forbidden vertices to add edge to vert}
 #stem_restrictions[1] holds vert:{set of forbidden vertices to form 2-stem-identification with vert}
 #stem_restrictions[2] holds vert:{set of forbidden vertices (as 2-sets) to form 3-stem-identification with vert}
-def check_all_realizations_from_initial_plane_graph(g,open_spine=False,include_induced=True,partition_restrictions={},stem_restrictions=False):
+def check_all_realizations_from_initial_plane_graph(g,open_spine=False,partition_restrictions={},stem_restrictions=False):
     begin = time.clock()
     count = 0
     bad_count = 0
-    for realization in configuration_FAS_generator(g,open_spine=open_spine,include_induced=include_induced,include_restrictions=partition_restrictions):
+    for realization in configuration_FAS_generator(g,open_spine=open_spine,include_restrictions=partition_restrictions):
         root_lists = get_cyclic_roots(realization[0],realization[1])
         partition,id_dict = realization[2:4]
         #print stem_restrictions[2]
@@ -1588,7 +1584,7 @@ def check_all_realizations_from_expanded_c7a4x5x5_case(case):
     partition_di[order-1] |= stem_1[base_border[0]]
     #Again, we could do more restrictions.  But it would probably not be worth the savings for such small additional faces.
 
-    wg.check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,include_induced=True,partition_restrictions=partition_di,stem_restrictions=[stem_1,stem_2,stem_3])
+    wg.check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,partition_restrictions=partition_di,stem_restrictions=[stem_1,stem_2,stem_3])
 
 
 
