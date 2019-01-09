@@ -1,6 +1,10 @@
-#Some things to-do:
+#Some things to-do (before going through line-by-line):
 #    Fix the restrictions for unspecified spine identifications to match write-up.
 #    There should be a much simpler (more recursive) way of generating stem identifications.
+#    Streamline printing
+#    Always include the induced realization.
+#    Add routine(s) for checking subgraph realizations.
+#    makeGraph vs. makeRedCon vs. RedCon
 
 
 #------------------------------------------------------
@@ -14,15 +18,14 @@
 #    graph_power
 #    RedCon
 #    makeRedCon
+#    makeGraph
 
 #SECTION 2:  Facial Adjacency Structure Generation
 #    restricted_partitions
-#    makeGraph
-#    configuration_realizations
-#    configuration_realizations_print
+#-    configuration_realizations_print
+#    configuration_FAS_generator
 #    nonidentified_faces
-#    get_cyclic roots
-#    configuration_realizations_from_graph_print
+#    get_cyclic_roots
 
 #SECTION 3:  Neighborhood Structure Generation
 #    identification_generator_multiregion
@@ -33,13 +36,11 @@
 #    configuration_identifier
 
 #SECTION 4:  Checking Core-choosability
-#    check_all_instances
-#    check_all_instances_print
-#    check_all_instances_from_graph_print
-#    check_stem_identifications_with_restrictions_print
-#    check_stem_identifications_print
-#    check_stem_identifications_no_print
-#    expand_scope_c7a4x5x5
+#want    check_all_subgraph_realizations
+#    check_all_configuration_realizations
+#    check_all_realizations_from_initial_plane_graph
+#    check_all_neighborhood_structures_for_FAS
+#    check_all_realizations_from_expanded_c7a4x5x5_case
 
 #SECTION 5:  The Target Set
 #    HRCs
@@ -376,93 +377,6 @@ def makeRedCon(configuration):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#------------------------------------------------------
-#SECTION 2:  Facial Adjacency Structure Generation
-#------------------------------------------------------
-
-
-
-
-
-
-
-
-
-def restricted_partitions(li,di):
-    if len(li) == 0:
-        yield []
-        return
-    if len(li) == 1:
-        yield [li[:],]
-        return
-    else:
-        for partition in restricted_partitions(li[:-1],di):
-            for i in [x for x in range(len(partition)) if not set(partition[x]) & di[li[-1]]]:
-                new_partition = [x[:] for x in partition]
-                new_partition[i].append(li[-1])
-                yield new_partition
-            new_partition = partition[:]
-            new_partition.append([li[-1],])
-            yield new_partition
-        return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #Not made for cxa33 or cxa34 (but perhaps made for c3a3 and c3a4?)
 #Not made for full chain around a specified face.  (c4a34x5 should be c4a534.)
 def makeGraph(configuration):
@@ -572,101 +486,101 @@ def makeGraph(configuration):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#------------------------------------------------------
+#SECTION 2:  Facial Adjacency Structure Generation
+#------------------------------------------------------
+
+
+
+
+
+
+
+
+
+def restricted_partitions(li,di):
+    if len(li) == 0:
+        yield []
+        return
+    if len(li) == 1:
+        yield [li[:],]
+        return
+    else:
+        for partition in restricted_partitions(li[:-1],di):
+            for i in [x for x in range(len(partition)) if not set(partition[x]) & di[li[-1]]]:
+                new_partition = [x[:] for x in partition]
+                new_partition[i].append(li[-1])
+                yield new_partition
+            new_partition = partition[:]
+            new_partition.append([li[-1],])
+            yield new_partition
+        return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import choosability as ch
 import wegner as wg
 import time
 import copy
 
 
-def configuration_realizations(configuration,include_induced=True,include_restrictions={}):
-    g = makeGraph(configuration)
-    if configuration[1]=='x':
-        spine_ends = [g[4][0][0],g[4][0][-1]]
-    else:
-        spine_ends = []
-    di = {x:set([]) for x in range(g[0])}
-    for x in include_restrictions.keys():#What is this??
-        di[x] != set(include_restrictions[x])
-    for v in range(g[0]):
-        for face in [x for x in g[4] if v in x]:
-            di[v] |= set(face)
-#     print di
-    count = 0
-    countc = 0
-    countt = 0
-    countp = 0
-    begin = time.clock()
-    for partition in restricted_partitions(range(g[0]),di):
-        count += 1
-        id_dict = {y:x for x in range(len(partition)) for y in partition[x]}
-        new_edges = set([])
-        for e in g[1]:
-            a = id_dict[e[0]]
-            b = id_dict[e[1]]
-            if a<b:
-                new_edges.add((a,b))
-            elif b<a:
-                new_edges.add((b,a))
-            #If a==b, don't add anything.
-        flag = True
-        for x in range(len(partition)):
-            if len([0 for e in new_edges if x in e])>3:
-                flag = False
-                break
-        if flag:
-            countc += 1
-            new_G = Graph(list(new_edges))
-            n = new_G.order()
-            i = n
-            nonid_faces = nonidentified_faces(g[4],id_dict)
-            #Check for trapped 2-vertices
-            for v in new_G.vertices():
-                if new_G.degree(v) != 2:
-                    continue
-                if v in spine_ends:
-                    continue
-                if len([0 for f in nonid_faces if set(partition[v]) & set(f)]) > 1:
-                    flag = False
-                    break
-            if flag:      
-                countt += 1
-                more_edges = set([])
-                for f in nonid_faces:#Need to eliminate faces which are identified with previously listed faces
-                    j = i
-                    for v in f:
-                        more_edges.add((id_dict[v],i))
-                        i += 1
-                    for v in range(j,i):
-                        more_edges.add((v,i))
-                        if v == i-1:
-                            more_edges.add((j,i-1))
-                        else:
-                            more_edges.add((v,v+1))
-                    i += 1
-                for e in more_edges:
-                    new_G.add_edge(e)
-                if new_G.is_planar():
-#                     print partition
-#                     print g[4]
-#                     print nonid_faces
-#                     new_G.show()
-                    if include_induced or len(partition) < g[0]:
-                        countp += 1
-                        new_G.delete_vertices(range(n,i))
-                        yield new_G,[[id_dict[z] for z in x] for x in nonid_faces]
-                        #print [[id_dict[z] for z in x] for x in nonid_faces]
-    end = time.clock()
-    t = end-begin
-    #print "Total partitions:   ",count
-    #print "Passed cubic test:  ",countc
-    #print "Passed trapped test:",countt
-    #print "Passed planar test: ",countp
-    #print "Time:",t
-
-
-def configuration_realizations_print(configuration,include_induced=True,include_restrictions={}):
-    g = makeGraph(configuration)
-    if configuration[1]=='x':
+def configuration_FAS_generator(g,open_spine=False,include_induced=True,include_restrictions={}):
+    if open_spine:
         spine_ends = [g[4][0][0],g[4][0][-1]]
     else:
         spine_ends = []
@@ -743,7 +657,7 @@ def configuration_realizations_print(configuration,include_induced=True,include_
                         print ">>> Realization #%d"%(countp)
                         print ">>> Partition: %s"%(str(partition))
                         print ">>> Edges: %s"%(str(new_G.edges()))
-                        yield new_G,[[id_dict[z] for z in x] for x in nonid_faces]
+                        yield new_G,[[id_dict[z] for z in x] for x in nonid_faces],partition,id_dict
                         #print [[id_dict[z] for z in x] for x in nonid_faces]
         if count % 100000 == 0:
             print " "*(12-len(str(count)))+str(count)+" "*(15-len(str(countp)))+str(countp)+"  "+ch.timestring(time.clock()-begin)
@@ -840,124 +754,6 @@ def get_cyclic_roots(graph,specified_faces):
     if added_spine_edge:
         graph.delete_edge((faces[0][0],faces[0][-1]))
     return [[z for z in x if z in R] for x in faces[f_orig:]]
-
-
-
-
-
-
-
-
-
-
-
-
-#g is same as what gets yielded by makeGraph, but is entered manually
-#g has form:  order,edges,spine,roots,faces
-def configuration_realizations_from_graph_print(g,open_spine=False,include_induced=True,include_restrictions={},stem_restrictions=[{},{},{}]):
-    if open_spine:
-        spine_ends = [g[4][0][0],g[4][0][-1]]
-    else:
-        spine_ends = []
-    di = {x:set([]) for x in range(g[0])}
-    for x in include_restrictions.keys():
-        di[x] |= set(include_restrictions[x])
-    for v in range(g[0]):
-        for face in [x for x in g[4] if v in x]:
-            di[v] |= set(face)
-    #print di
-    count = 0
-    countc = 0
-    countt = 0
-    countp = 0
-    print "  Partitions   Realizations   Time"
-    begin = time.clock()
-    for partition in restricted_partitions(range(g[0]),di):
-        count += 1
-        id_dict = {y:x for x in range(len(partition)) for y in partition[x]}
-        new_edges = set([])
-        for e in g[1]:
-            a = id_dict[e[0]]
-            b = id_dict[e[1]]
-            if a<b:
-                new_edges.add((a,b))
-            elif b<a:
-                new_edges.add((b,a))
-            #If a==b, don't add anything.
-        flag = True
-        for x in range(len(partition)):
-            if len([0 for e in new_edges if x in e])>3:
-                flag = False
-                break
-        if flag:
-            countc += 1
-            new_G = Graph(list(new_edges))
-            n = new_G.order()
-            i = n
-            nonid_faces = nonidentified_faces(g[4],id_dict)
-            #Check for trapped 2-vertices
-            for v in new_G.vertices():
-                if new_G.degree(v) != 2:
-                    continue
-                if v in spine_ends:
-                    continue
-                if len([0 for f in nonid_faces if set(partition[v]) & set(f)]) > 1:
-                    flag = False
-                    break
-            #if flag:
-                #stem_rest_1 = {x:{id_dict[z] for y in partition[x] for z in stem_restrictions[0][y]} for x in range(len(partition))}
-                #if len(partition)==g[0]:
-                    #print "meow!"
-                    #print stem_rest_1
-                    #print new_edges
-                #for edge in [[x,y] for z in new_edges for x in partition[z[0]] for y in partition[z[1]]]:
-                    #if edge[1] in stem_rest_1[edge[0]]:
-                        #flag = False
-                        #break
-                #Don't bother with other stem restriction violations -- complicated unless we enter information in terms of fixed edges and non-fixed edges.  Instead, build this into thepartition identification restrictions.
-            if flag:
-                countt += 1
-                more_edges = set([])
-                for f in nonid_faces:#Need to eliminate faces which are identified with previously listed faces
-                    j = i
-                    for v in f:
-                        more_edges.add((id_dict[v],i))
-                        i += 1
-                    for v in range(j,i):
-                        more_edges.add((v,i))
-                        if v == i-1:
-                            more_edges.add((j,i-1))
-                        else:
-                            more_edges.add((v,v+1))
-                    i += 1
-                for e in more_edges:
-                    new_G.add_edge(e)
-                if new_G.is_planar():
-#                     print partition
-#                     print g[4]
-#                     print nonid_faces
-#                     new_G.show()
-                    if include_induced or len(partition) < g[0]:
-                        countp += 1
-                        new_G.delete_vertices(range(n,i))
-                        print ">>> Realization #%d"%(countp)
-                        print ">>> Partition: %s"%(str(partition))
-                        print ">>> Edges: %s"%(str([x[:2] for x in new_G.edges()]))
-                        yield new_G,[[id_dict[z] for z in x] for x in nonid_faces],partition,id_dict
-                        #print [[id_dict[z] for z in x] for x in nonid_faces]
-        if count % 100000 == 0:
-            print " "*(12-len(str(count)))+str(count)+" "*(15-len(str(countp)))+str(countp)+"  "+ch.timestring(time.clock()-begin)
-    end = time.clock()
-    t = end-begin
-    #print "Total partitions:   ",count
-    #print "Passed cubic test:  ",countc
-    #print "Passed trapped test:",countt
-    #print "Passed planar test: ",countp
-    #print "Time:",t
-
-
-
-
 
 
 
@@ -1451,60 +1247,14 @@ def configuration_identifier(underlying_graph,identifications):
 
 
 
-def check_all_instances(config_str,include_induced=True):
-    begin = time.clock()
+def check_all_configuration_realizations(config_str):
     print config_str
-    count = 0
-    bad_count = 0
-    for realization in configuration_realizations(config_str,include_induced=include_induced):
-        root_lists = get_cyclic_roots(realization[0],realization[1])
-        check = check_stem_identifications_no_print(config_str,edges=realization[0].edges(),outer_lists=root_lists)
-        count += 1
-        if not check:
-            bad_count += 1
-    end = time.clock()
-    print "Done!  %d realizations."%(count)
-    if bad_count > 0:
-        print "Nope!  There were %d bad realizations!"%(bad_count)
+    g = makeGraph(config_str)
+    if config_str[1]=='x':
+        open_spine=True
     else:
-        print "Good!  All instances check out!"
-    print ch.timestring(end-begin)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def check_all_instances_print(config_str,include_induced=True):
-    begin = time.clock()
-    print config_str
-    count = 0
-    bad_count = 0
-    for realization in configuration_realizations_print(config_str,include_induced=include_induced):
-        root_lists = get_cyclic_roots(realization[0],realization[1])
-        check = check_stem_identifications_print(config_str,edges=realization[0].edges(),outer_lists=root_lists)
-        count += 1
-        if not check:
-            bad_count += 1
-    end = time.clock()
-    print "Done!  %d realizations."%(count)
-    if bad_count > 0:
-        print "Nope!  There were %d bad realizations!"%(bad_count)
-    else:
-        print "Good!  All instances check out!"
-    print ch.timestring(end-begin)
-
-
-
+        open_spine=False
+    check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,include_induced=True,partition_restrictions={},stem_restrictions=False)
 
 
 
@@ -1524,11 +1274,11 @@ def check_all_instances_print(config_str,include_induced=True):
 #stem_restrictions[0] holds vert:{set of forbidden vertices to add edge to vert}
 #stem_restrictions[1] holds vert:{set of forbidden vertices to form 2-stem-identification with vert}
 #stem_restrictions[2] holds vert:{set of forbidden vertices (as 2-sets) to form 3-stem-identification with vert}
-def check_all_instances_from_graph_print(g,open_spine=False,include_induced=True,partition_restrictions={},stem_restrictions=[{},{},{}]):
+def check_all_realizations_from_initial_plane_graph(g,open_spine=False,include_induced=True,partition_restrictions={},stem_restrictions=False):
     begin = time.clock()
     count = 0
     bad_count = 0
-    for realization in configuration_realizations_from_graph_print(g,open_spine=open_spine,include_induced=include_induced,include_restrictions=partition_restrictions,stem_restrictions=stem_restrictions):
+    for realization in configuration_FAS_generator(g,open_spine=open_spine,include_induced=include_induced,include_restrictions=partition_restrictions):
         root_lists = get_cyclic_roots(realization[0],realization[1])
         partition,id_dict = realization[2:4]
         #print stem_restrictions[2]
@@ -1537,7 +1287,7 @@ def check_all_instances_from_graph_print(g,open_spine=False,include_induced=True
         #stem_rest_1 = {x:{id_dict[z] for y in partition[x] for z in stem_restrictions[0][y]} for x in range(len(partition))}
         #stem_rest_2 = {x:{id_dict[z] for y in partition[x] for z in stem_restrictions[1][y]} for x in range(len(partition))}
         #stem_rest_3 = {x:{(id_dict[z[0]],id_dict[z[1]]) for y in partition[x] for z in stem_restrictions[2][y]} for x in range(len(partition))}
-        check = check_stem_identifications_with_restrictions_print('Manual entry',edges=realization[0].edges(),outer_lists=root_lists,include_restrictions=stem_restrictions)
+        check = check_all_neighborhood_structures_for_FAS(edges=realization[0].edges(),outer_lists=root_lists,include_restrictions=stem_restrictions)
         count += 1
         if not check:
             bad_count += 1
@@ -1567,15 +1317,15 @@ def check_all_instances_from_graph_print(g,open_spine=False,include_induced=True
 
 
 #Now outer_lists are multiple regions (list of lists).
-#If rc_str is something makeRedCon can't parse, then edges and outer_lists must be submitted.
-def check_stem_identifications_with_restrictions_print(rc_str,edges=False,outer_lists=[],include_restrictions=[{},{},{}]):
+def check_all_neighborhood_structures_for_FAS(edges=False,outer_lists=[],include_restrictions=False):
     begin = time.clock()
-    #print "-"*30+rc_str+"-"*30
-    if edges:
-        rc = RedCon(edges,rc_str)
+    rc = RedCon(edges,"")
+    if not include_restrictions:
+        edge_restrictions = {x:set([]) for x in rc.underlying_graph.vertices()}
+        ident_2_restrictions =  {x:set([]) for x in rc.underlying_graph.vertices()}
+        ident_3_restrictions =  {x:set([]) for x in rc.underlying_graph.vertices()}
     else:
-        rc = makeRedCon(rc_str)
-    edge_restrictions,ident_2_restrictions,ident_3_restrictions = include_restrictions
+        edge_restrictions,ident_2_restrictions,ident_3_restrictions = include_restrictions
     count = 0
     good_count = 0
     bad_count = 0
@@ -1689,167 +1439,6 @@ def check_stem_identifications_with_restrictions_print(rc_str,edges=False,outer_
 
 
 
-#Now outer_lists are multiple regions (list of lists).
-#If rc_str is something makeRedCon can't parse, then edges and outer_lists must be submitted.
-def check_stem_identifications_print(rc_str,edges=False,outer_lists=[]):
-    begin = time.clock()
-    #print "-"*30+rc_str+"-"*30
-    if edges:
-        rc = RedCon(edges,rc_str)
-    else:
-        rc = makeRedCon(rc_str)
-    count = 0
-    good_count = 0
-    bad_count = 0
-    keys = ['error', 'greedy', 'CNS', 'brute']
-    count_dict = {s:0 for s in keys}
-    bad_li = []
-    
-    if outer_lists:
-        li = [x[:] for x in outer_lists]
-        G = Graph(rc.underlying_graph)
-        twos = [x for y in li for x in y]
-        dist1 = []
-        dist2 = []
-        for i in range(len(twos)):
-            u = twos[i]
-            for j in range(i+1,len(twos)):
-                v = twos[j]
-                d = G.distance(u,v)
-                if d == 1:
-                    dist1.append(set([u,v]))
-                elif d == 2:
-                    dist2.append(set([u,v]))
-    else:
-        print "Nope!  Need to feed in outer_lists!  Routine is under construction."
-        #li,dist1,dist2 = get_roots_cyclic(rc_str)
-    
-    for idents in identification_generator_multiregion(li,dist1,dist2):
-        count += 1
-    print ">>> There are "+str(count)+" identifications to check.  (Took "+ch.timestring(time.clock()-begin)+" to count.)  Starting:"
-    print ">>> >>> Index   Good   Bad   Time   Identification"
-    
-    i = 0
-    for idents in identification_generator_multiregion(li,dist1,dist2):
-        i += 1
-        G,f = configuration_identifier(rc.underlying_graph,idents)
-        y = ch.fChoosableNoPrint(G,f,inprocess=4,print_mod=100,maxIS=True,rev=False)
-        if y[0]:
-            good_count += 1
-        else:
-            bad_count += 1
-            bad_li.append(idents)
-        count_dict[y[1]] += 1
-        print ">>> >>> "+" "*(len(str(count))-len(str(i)))+str(i)+" "*(len(str(count))-len(str(good_count)))+"   "+str(good_count)+"   "+" "*(len(str(count))-len(str(bad_count)))+str(bad_count)+"   "+ch.timestring(time.clock()-begin)+"   "+str(idents)
-    
-    #print "\n"*7
-    #print "Total:",count
-    #print "Bad:",bad_count
-    #print "Good:",good_count
-    if count == good_count:
-        print ">>> >>> -->  Good for all stem identifications!"
-    else:
-        print ">>> >>> -->  Uh-oh!  Problem!"
-    print
-    #for s in keys:
-        #print s+":",count_dict[s]
-    end = time.clock()
-    #print "\nTime:",ch.timestring(end-begin)
-    #if good_count < count:
-        #print "Problems:"
-        #for x in bad_li:
-            #print x
-    #print
-    if good_count == count:
-        #print "Complete:  "+rc_str+" is GOOD."
-        return True
-    else:
-        #print "Complete:  "+rc_str+" is BAD."
-        return False
-
-
-
-
-
-
-
-#Now outer_lists are multiple regions (list of lists).
-#If rc_str is something makeRedCon can't parse, then edges and outer_lists must be submitted.
-def check_stem_identifications_no_print(rc_str,edges=False,outer_lists=[]):
-    begin = time.clock()
-    #print "-"*30+rc_str+"-"*30
-    if edges:
-        rc = RedCon(edges,rc_str)
-    else:
-        rc = makeRedCon(rc_str)
-    count = 0
-    good_count = 0
-    bad_count = 0
-    keys = ['error', 'greedy', 'CNS', 'brute']
-    count_dict = {s:0 for s in keys}
-    bad_li = []
-    
-    if outer_lists:
-        li = [x[:] for x in outer_lists]
-        G = Graph(rc.underlying_graph)
-        twos = [x for y in li for x in y]
-        dist1 = []
-        dist2 = []
-        for i in range(len(twos)):
-            u = twos[i]
-            for j in range(i+1,len(twos)):
-                v = twos[j]
-                d = G.distance(u,v)
-                if d == 1:
-                    dist1.append(set([u,v]))
-                elif d == 2:
-                    dist2.append(set([u,v]))
-    else:
-        print "Nope!  Need to feed in outer_lists!  Routine is under construction."
-        #li,dist1,dist2 = get_roots_cyclic(rc_str)
-    
-    for idents in identification_generator_multiregion(li,dist1,dist2):
-        count += 1
-    #print "There are "+str(count)+" identifications to check.  (Took "+ch.timestring(time.clock()-begin)+" to count.)  Starting:"
-    #print "Index   Good   Bad   Time"
-    
-    i = 0
-    for idents in identification_generator_multiregion(li,dist1,dist2):
-        i += 1
-        G,f = configuration_identifier(rc.underlying_graph,idents)
-        y = ch.fChoosableNoPrint(G,f,inprocess=4,print_mod=100,maxIS=True,rev=False)
-        if y[0]:
-            good_count += 1
-        else:
-            bad_count += 1
-            bad_li.append(idents)
-        count_dict[y[1]] += 1
-        #print " "*(len(str(count))-len(str(i)))+str(i)+" "*(len(str(count))-len(str(good_count)))+"   "+str(good_count)+"   "+" "*(len(str(count))-len(str(bad_count)))+str(bad_count)+"   "+ch.timestring(time.clock()-begin)
-    
-    #print "\n"*7
-    #print "Total:",count
-    #print "Bad:",bad_count
-    #print "Good:",good_count
-    #if count == good_count:
-        #print "-->  Good for all stem identifications!"
-    #else:
-        #print "-->  Uh-oh!  Problem!"
-    #print
-    #for s in keys:
-        #print s+":",count_dict[s]
-    end = time.clock()
-    #print "\nTime:",ch.timestring(end-begin)
-    #if good_count < count:
-        #print "Problems:"
-        #for x in bad_li:
-            #print x
-    #print
-    if good_count == count:
-        #print "Complete:  "+rc_str+" is GOOD."
-        return True
-    else:
-        #print "Complete:  "+rc_str+" is BAD."
-        return False
 
 
 
@@ -1859,10 +1448,7 @@ def check_stem_identifications_no_print(rc_str,edges=False,outer_lists=[]):
 
 
 
-
-
-
-def expand_scope_c7a4x5x5(case):
+def check_all_realizations_from_expanded_c7a4x5x5_case(case):
     print "Expanding scope around c7a4x5x5:"
 
     order,edges,spine,roots,faces = wg.makeGraph('c7a4x5x5')#spine won't be important here.
@@ -2002,7 +1588,7 @@ def expand_scope_c7a4x5x5(case):
     partition_di[order-1] |= stem_1[base_border[0]]
     #Again, we could do more restrictions.  But it would probably not be worth the savings for such small additional faces.
 
-    wg.check_all_instances_from_graph_print(g,open_spine=open_spine,include_induced=True,partition_restrictions=partition_di,stem_restrictions=[stem_1,stem_2,stem_3])
+    wg.check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,include_induced=True,partition_restrictions=partition_di,stem_restrictions=[stem_1,stem_2,stem_3])
 
 
 
