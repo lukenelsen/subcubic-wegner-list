@@ -1,5 +1,4 @@
 #Some things to-do (before going through line-by-line):
-#    Fix the restrictions for unspecified spine identifications to match write-up.
 #    There should be a much simpler (more recursive) way of generating stem identifications.
 #    Add routine(s) for checking subgraph realizations.
 #    makeGraph vs. makeRedCon vs. RedCon
@@ -584,10 +583,20 @@ def configuration_FAS_generator(g,open_spine=False,include_restrictions={}):
     di = {x:set([]) for x in range(g[0])}
     for x in include_restrictions.keys():
         di[x] |= set(include_restrictions[x])
-    for v in range(g[0]):
-        for face in [x for x in g[4] if v in x]:
+    if open_spine:
+        init_spec_face = 1
+        the_spine = g[4][0]
+        di[the_spine[0]] |= set(the_spine [0:3])
+        di[the_spine[1]] |= set(the_spine[0:4])
+        di[the_spine[-2]] |= set(the_spine[-4:])
+        di[the_spine[-1]] |= set(the_spine[-3:])
+        for v in the_spine[2:-2]:
+            di[v] |= set(the_spine[v-2:v+3])
+    else:
+        init_spec_face = 0
+    for face in g[4][init_spec_face:]:
+        for v in face:
             di[v] |= set(face)
-#     print di
     count = 0
     countc = 0
     countt = 0
@@ -601,10 +610,9 @@ def configuration_FAS_generator(g,open_spine=False,include_restrictions={}):
         for e in g[1]:
             a = id_dict[e[0]]
             b = id_dict[e[1]]
-            if a<b:
-                new_edges.add((a,b))
-            elif b<a:
-                new_edges.add((b,a))
+            if a > b:
+                a,b = b,a
+            new_edges.add((a,b))
             #If a==b, don't add anything.
         flag = True
         for x in range(len(partition)):
@@ -614,47 +622,53 @@ def configuration_FAS_generator(g,open_spine=False,include_restrictions={}):
         if flag:
             countc += 1
             new_G = Graph(list(new_edges))
-            n = new_G.order()
-            i = n
             nonid_faces = nonidentified_faces(g[4],id_dict)
+            nonid_faces = [[id_dict[x] for x in f] for f in nonid_faces]
+            if nonid_faces[0][0]==nonid_faces[0][-1]:
+                del nonid_faces[0][-1]
             #Check for trapped 2-vertices
             for v in new_G.vertices():
                 if new_G.degree(v) != 2:
                     continue
-                if v in spine_ends:
-                    continue
-                if len([0 for f in nonid_faces if set(partition[v]) & set(f)]) > 1:
-                    flag = False
-                    break
+                #The following condition for spinal ends also holds even if the two are identified.
+                if open_spine and v in (id_dict[spine_ends[0]],id_dict[spine_ends[1]]):
+                    if len([0 for f in nonid_faces[1:] if v in f]) > 1:
+                        flag = False
+                        break
+                else:
+                    if len([0 for f in nonid_faces if v in f]) > 1:
+                        flag = False
+                        break
             if flag:      
                 countt += 1
-                more_edges = set([])
-                for f in nonid_faces:#Need to eliminate faces which are identified with previously listed faces
-                    j = i
-                    for v in f:
-                        more_edges.add((id_dict[v],i))
-                        i += 1
-                    for v in range(j,i):
-                        more_edges.add((v,i))
-                        if v == i-1:
-                            more_edges.add((j,i-1))
-                        else:
-                            more_edges.add((v,v+1))
+                n = new_G.order()
+                i = n
+                
+                newer_G = Graph(new_G)
+                if open_spine:
+                    a,b = id_dict[spine_ends[0]],id_dict[spine_ends[1]]
+                    if a > b:
+                        a,b = b,a
+                    if a!=b and not (a,b) in new_edges:
+                        newer_G.add_edge((a,b))
+                initial_edges = newer_G.edges()[:]
+                edge_di = {}
+                for e in initial_edges:
+                    edge_di[e[0:2]] = i
+                    edge_di[(e[1],e[0])] = i
+                    newer_G.subdivide_edge(e[0:2],1)
                     i += 1
-                for e in more_edges:
-                    new_G.add_edge(e)
-                if new_G.is_planar():
-#                     print partition
-#                     print g[4]
-#                     print nonid_faces
-#                     new_G.show()
+                for face in nonid_faces:
+                    for j in range(len(face)):
+                        newer_G.add_edge((i,edge_di[(face[j-1],face[j])]))
+                    i += 1
+                    
+                if newer_G.is_planar():
                     countp += 1
-                    new_G.delete_vertices(range(n,i))
-                    print ">>> Realization #%d"%(countp)
+                    print ">>> Realization #%d"%(countp),count
                     print ">>> Partition: %s"%(str(partition))
                     print ">>> Edges: %s"%(str(new_G.edges()))
-                    yield new_G,[[id_dict[z] for z in x] for x in nonid_faces],partition,id_dict
-                    #print [[id_dict[z] for z in x] for x in nonid_faces]
+                    yield new_G,nonid_faces,partition,id_dict
         if count % 100000 == 0:
             print " "*(12-len(str(count)))+str(count)+" "*(15-len(str(countp)))+str(countp)+"  "+ch.timestring(time.clock()-begin)
     end = time.clock()
@@ -689,7 +703,7 @@ def nonidentified_faces(faces,id_dict):
                 #We need to not check reverse because faces must have same orientation.
         if flag:
             new_faces.append(face[:])
-    new_faces.insert(0,faces[0][:])
+    new_faces.insert(0,faces[0][:])#central face cannot be identified with specified outer faces for configurations in the target set.
     return new_faces
     
 
@@ -707,52 +721,32 @@ def nonidentified_faces(faces,id_dict):
 
 
 
-
-
-
-
-def get_cyclic_roots(graph,specified_faces):
+#The fact that every vertex is on at most one outer region also implies that each edge is on at most one outer region.  So we can list the directed edges which don't show up in the specified faces and follow them around the cycle boundaries of the outer regions.
+def get_outer_region_roots(graph,specified_faces):
+    #graph.show()
+    #print specified_faces
     R = {v for v in graph.vertices() if graph.degree(v)==2}
-    faces = specified_faces[:]
-    added_spine_edge = False
-    if not graph.has_edge((faces[0][0],faces[0][-1])):
-        graph.add_edge((faces[0][0],faces[0][-1]))
-        added_spine_edge = True
-    face_di = {v:{x for x in range(len(faces)) if v in faces[x]} for v in graph.vertices()}
-    f = len(faces)
-    f_orig = len(faces)
-    for v in graph.vertices():
-        if graph.degree(v) > len(face_di[v]):
-            faces.append([])
-            prev_vtx = v
-            next_vtx = None
-            while True:
-                for u in graph.neighbors(prev_vtx):
-                    I = face_di[u] & face_di[prev_vtx]
-                    I_li = []
-                    for i in I:
-                        a = faces[i].index(u)
-                        b = faces[i].index(prev_vtx)
-                        if {a-b,b-a} & {1,len(faces[i])-1}:
-                            I_li.append(i)
-                    if len(I_li) < 2:#That is, if len(I)==1.
-                        fa = I_li[0]
-                        b = faces[fa].index(prev_vtx)
-                        if u == faces[fa][b-1]:
-                            next_vtx = u
-                            break
-                face_di[next_vtx].add(f)
-                faces[-1].append(next_vtx)
-                prev_vtx = next_vtx
-                if prev_vtx == v:
-                    break
-            f += 1
-    if added_spine_edge:
-        graph.delete_edge((faces[0][0],faces[0][-1]))
-    return [[z for z in x if z in R] for x in faces[f_orig:]]
-
-
-
+    all_diedges = {(e[0],e[1]) for e in graph.edges()} | {(e[1],e[0]) for e in graph.edges()}
+    #Assume spine ends are connected by some closed curve (acts like a diedge).
+    all_diedges |= {(specified_faces[0][0],specified_faces[0][-1]),(specified_faces[0][-1],specified_faces[0][0])}
+    facial_diedges = {(face[j-1],face[j]) for face in specified_faces for j in range(len(face))}
+    pointer_di = {e[0]:e[1] for e in all_diedges-facial_diedges}
+    #print pointer_di
+    outer_regions = []
+    while pointer_di:
+        v = pointer_di.keys()[0]
+        new_region = [v,]
+        vtx = pointer_di[v]
+        del pointer_di[v]
+        #print v
+        while vtx != v:
+            #print vtx
+            new_region.append(vtx)
+            next_vtx = pointer_di[vtx]
+            del pointer_di[vtx]
+            vtx = next_vtx
+        outer_regions.append(new_region[:])
+    return [[z for z in x if z in R] for x in outer_regions]
 
 
 
@@ -1275,7 +1269,7 @@ def check_all_realizations_from_initial_plane_graph(g,open_spine=False,partition
     count = 0
     bad_count = 0
     for realization in configuration_FAS_generator(g,open_spine=open_spine,include_restrictions=partition_restrictions):
-        root_lists = get_cyclic_roots(realization[0],realization[1])
+        root_lists = get_outer_region_roots(realization[0],realization[1])
         partition,id_dict = realization[2:4]
         #print stem_restrictions[2]
         ##Since base vertices are in front of ordering and not identified with each other,
