@@ -1,5 +1,4 @@
 #Some things to-do (before going through line-by-line):
-#    There should be a much simpler (more recursive) way of generating stem identifications.
 #    Add routine(s) for checking subgraph realizations.
 #    makeGraph vs. makeRedCon vs. RedCon
 
@@ -17,18 +16,15 @@
 #    makeRedCon
 #    makeGraph
 
-#SECTION 2:  Facial Adjacency Structure Generation
+#SECTION 2:  Facial Adjacency Structure Generation For Configurations
 #    restricted_partitions
 #    configuration_FAS_generator
 #    nonidentified_faces
-#    get_cyclic_roots
+#    get_outer_region_roots
 
 #SECTION 3:  Neighborhood Structure Generation
-#    identification_generator_multiregion
-#    powerset
-#    identification_generator
-#    single_partition_generator
-#    full_partition_generator
+#    NS_generator_no_enforced_planarity
+#    NS_generator_with_enforced_planarity
 #    configuration_identifier
 
 #SECTION 4:  Checking Core-choosability
@@ -526,7 +522,7 @@ def makeGraph(configuration):
 
 
 #------------------------------------------------------
-#SECTION 2:  Facial Adjacency Structure Generation
+#SECTION 2:  Facial Adjacency Structure Generation For Configurations
 #------------------------------------------------------
 
 
@@ -814,27 +810,68 @@ def get_outer_region_roots(graph,specified_faces):
 
 
 
-
-
-
-
-def identification_generator_multiregion(root_lists,dist1,dist2):
-    if len(root_lists) == 0:
+#roots is a list of distinct objects.
+#dist1,dist2 are lists of sets of pairs at distance 1 (respectively distance 2) in the graph.
+#dist1,dist2 get passed on recursively without modification since we don't expect them to be too large.
+def NS_generator_no_enforced_planarity(roots,dist1,dist2):
+    if len(roots) < 2:
         yield [[],[],[]]
         return
-    elif len(root_lists) == 1:
-        for ident in identification_generator(root_lists[0],dist1,dist2):
-            yield ident
+    elif len(roots)==2:
+        if not set(roots) in dist1:
+            yield [[roots[:]],[],[]]
+            if not set(roots) in dist2:
+                yield [[],[roots[:]],[]]
         yield [[],[],[]]
         return
     else:
-        for ident1 in identification_generator_multiregion(root_lists[:-1],dist1,dist2):
-            for ident2 in identification_generator_multiregion([root_lists[-1]],dist1,dist2):
-                ident = [x[:] for x in ident1]
-                for i in range(3):
-                    for x in ident2[i]:
-                        ident[i].append(x)
-                yield ident
+        #We recursively proceed by cases based on the last root.
+        
+        #Case 1:  Condition on the last root being in a three-stem.
+        for two in combinations(range(len(roots)-1),2):
+            close_count = 0
+            close_couples = set(frozenset(x) for x in dist1) | set(frozenset(x) for x in dist2)
+            triple_couples = set([frozenset([roots[two[0]],roots[two[1]]])])
+            triple_couples |= set([frozenset([roots[two[0]],roots[-1]])])
+            triple_couples |= set([frozenset([roots[two[1]],roots[-1]])])
+            if len(triple_couples & close_couples) > 2:
+                continue
+            new_roots = roots[:-1]
+            del new_roots[two[1]]
+            del new_roots[two[0]]
+            for substructure in NS_generator_no_enforced_planarity(new_roots,dist1,dist2):
+                structure = [x[:] for x in substructure]
+                structure[2].append([roots[two[0]],roots[two[1]],roots[-1]])
+                yield structure
+        
+        #Case 2:  Condition on the last root being in a new edge.
+        too_close = {x for y in dist1 if roots[-1] in y for x in y}
+        for one in [x for x in range(len(roots)-1) if not roots[x] in too_close]:
+            new_roots = roots[:-1]
+            del new_roots[one]
+            for substructure in NS_generator_no_enforced_planarity(new_roots,dist1,dist2):
+                structure = [x[:] for x in substructure]
+                structure[0].append([roots[one],roots[-1]])
+                yield structure
+        
+        #Case 3:  Condition on the last root being in a two-stem.
+        too_close |= {x for y in dist2 if roots[-1] in y for x in y}
+        for one in [x for x in range(len(roots)-1) if not roots[x] in too_close]:
+            new_roots = roots[:-1]
+            del new_roots[one]
+            for substructure in NS_generator_no_enforced_planarity(new_roots,dist1,dist2):
+                structure = [x[:] for x in substructure]
+                structure[1].append([roots[one],roots[-1]])
+                yield structure
+            
+        
+        #Case 4:  Condition on the last root being in a one-stem.
+        new_roots = roots[:-1]
+        for substructure in NS_generator_no_enforced_planarity(new_roots,dist1,dist2):
+            structure = [x[:] for x in substructure]
+            yield structure
+            
+        #Done.
         return
 
 
@@ -845,253 +882,93 @@ def identification_generator_multiregion(root_lists,dist1,dist2):
 
 
 
-from itertools import *
-
-def powerset(iterable):
-    "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
-    s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
-    
 
 
 
-
-
-
-
-def identification_generator(li,dist1,dist2):
-    dist12 = dist1[:]
-    dist12.extend(dist2)
-    
-#     print "li:",li
-    #Now iterate through the subsets to obtain all planar partitions on li into 2/3-lists for each subset.
-    #Note:  If there is a 2-identification, it must not be in dist1.
-    it = powerset(li)
-    #Move past empty set and singletons.
-    it.next()
-    for x in range(len(li)):
-        it.next()
-    
-    for x in it:
-#         print "\n\nvertex subset:",x
-        #If our subset only partitions into 2-sets of adjacent roots, then we don't feed it to the partition generator.
-        if len(x) in [2,4]:
-            empty_gen = True
-            for edge in combinations(x, 2):
-                if not set(x) in dist1:
-                    empty_gen = False
-                    break
-            if empty_gen:
-                continue
-        for y in full_partition_generator(list(x),[dist1,dist12]):
-#             print "\ny:",y
-            #y is a particular partition of list(x) into 2- and 3-lists.
-            #We want to reformat it to be a list of three lists:
-            #0.  2-lists for stem-to-root identification,
-            #1.  2-lists for stem-to-stem identification,
-            #2.  3-lists for stem-to-stem identification.
-            #The 3-lists of y go into (2).  The 2-lists of y may go into either (0) or (1) unless they are in dist2,
-            #in which case they may go only into (0).
-            L0_certain = []
-            L1_potential = []
-            L2 = []
-            for z in y:
-                if len(z) > 2:
-                    L2.append(z)
-                elif set(z) in dist2:
-                    L0_certain.append(z)
-                else:
-                    L1_potential.append(z)
-#             print "L0_certain:",L0_certain
-#             print "L0_potential:",L1_potential
-#             print "L2:",L2
-            for subset in powerset(L1_potential):
-#                 print ">>subset:",subset
-                L0 = L0_certain[:]
-                L1 = list(subset)
-                L0.extend([pair for pair in L1_potential if not pair in subset])
-                #Now, yield this particular choice for 2-identifications for this partition
-#                 print [L0,L1,L2]
-                yield [L0,L1,L2]
-    
-    return
-
-
-
-
-
-
-
-
-
-
-
-#Generates the sublists of size 3 and 2 which contain the first element of li and whose elements 
-#are not separated by a single element from li.  Yields the sublist and the remaining contiguous 
-#sublists.  Assumes that len(li) is at least 2.
-def single_partition_generator(li,restrictions):
-    n = len(li)
-    
-    #First, generate the lists of size 3.
-    if n >= 5:
-        a_options = [1,]
-        a_options.extend(range(3,n-3))
-        a_options.append(n-2)
-    elif n==3:
-        a_options = [1,]
-    else:#n in [2,4]
-        a_options = []
-    
-    for a in a_options:
-        if n-1-a >= 3:
-            b_options = [a+1,]
-            b_options.extend(range(a+3,n-2))
-            b_options.append(n-1)
-        else:#n-1-a==1
-            b_options = [n-1]
-        
-        for b in b_options:
-            if {li[0],li[a]} in restrictions[1] and {li[0],li[b]} in restrictions[1] and {li[a],li[b]} in restrictions[1]:
-                continue
-            part = [li[x] for x in [0,a,b]]
-            res = []
-            if a > 1:
-                res.append(li[1:a])
-            if b-a > 1:
-                res.append(li[a+1:b])
-            if n-b > 1:
-                res.append(li[b+1:])
-            yield (part,res)
-    
-    #Next, generate the lists of size 2.
-    if n >= 4:
-        a_options = [1,]
-        a_options.extend(range(3,n-2))
-        a_options.append(n-1)
-    elif n==2:
-        a_options = [1,]
-    else:#n ==3
-        a_options = []
-    
-    for a in a_options:
-        if {li[0],li[a]} in restrictions[0]:
-            continue
-        part = [li[x] for x in [0,a]]
-        res = []
-        if a > 1:
-            res.append(li[1:a])
-        if n-a > 1:
-            res.append(li[a+1:])
-        yield (part,res)
-    
-    #Send note of completion.
-    yield None
-    return
-
-
-
-
-
-
-
-
-
-
-from collections import deque
-
-#Update comments below for res_deque & res_stack.
-
-#Given a list li, generates all partitions of li such that each part is of size 2 or 3 and such that
-#the parts can be nested in order.
-#Example: li = [1,2,3,4,5]
-#[[1,2,3],[4,5]]
-#[[1,2,5],[3,4]]
-#[[1,4,5],[2,3]]
-#[[1,2],[3,4,5]]
-#[[1,5],[2,3,4]]
-#'Nested' means that if the elements are put on a horizontal line in order, then a point for each part can 
-#be plotted above the horizontal line so that if straight lines are drawn from the point to each of the part's 
-#elements, then none of these lines intersect.
-def full_partition_generator(li,restrictions):
-    #At a given step of the generation, the currently determined parts of the partition are given by partition,
-    #  the remaining contiguous pieces of li are given by res_stack[-1] (in order), and gen_stack[-1] gives 
-    # the single-piece generator which generated partition[-1] and the first parts of res_stack[-1].
-    gen_stack = [single_partition_generator(li,restrictions),]
-    x = gen_stack[-1].next()
-    if x == None:
+#roots_by_region is a list of lists, each of distinct objects.
+#dist1,dist2 are lists of sets of pairs at distance 1 (respectively distance 2) in the graph.
+#dist1,dist2 get passed on recursively without modification since we don't expect them to be too large.
+def NS_generator_with_enforced_planarity(roots_by_region,dist1,dist2):
+    if len(roots_by_region) == 0:
+        yield [[],[],[]]
         return
-    partition = [x[0],]
-    res_stack = [deque(x[1])]
-    
-    #Every pass through the loops takes us to the next partition to yield, then backtracks 
-    # through any exhausted generators.
-    while True:
-#         print "\n"*4+"top:"+"---"*20
-#         print 'partition:',partition
-#         print 'res_stack:',res_stack
-        good = True#boolean to indicate skipping to the backtrack stage -- necessary when single generators are empty from the start.
-        #From wherever we are now, build all the way up to a full partition.
-#         print "entering forward loop"
-        while res_stack[-1]:
-#             print "---"
-            #If res_deque[0] is a restricted 2-list, then we need to backtrack now.
-            #Otherwise, the single_partition_generator will yield at least once.
-            #The only other possible issue would be if len(res_deque)==4 and every pair is restricted -- but
-            #this cannot happen since K_4 is not half-plane-embeddable.
-            next_interval = res_stack[-1].popleft()
-#             if len(next_interval) < 3 and set(next_interval) in restrictions:
-#                 good = False
-#                 break
-            gen_stack.append(single_partition_generator(next_interval,restrictions))
-            x = gen_stack[-1].next()
-            #If gen_stack[-1] is already exhausted, then we need to backtrack now.
-            #This could happen if next_interval induces only restricted edges in the relevant spots.
-            #Example:  len(next_interval)==2 and set(next_interval) in restrictions[0].
-            #Example:  len(next_interval)==3 and each 2-set of next_interval in restrictions[0]|restrictions[1].
-            if x == None:
-                del gen_stack[-1]
-                good = False
-                break
-            partition.append(x[0])
-            res_stack.append(deque(res_stack[-1]))
-            res_stack[-1].extendleft(x[1][::-1])
-#             print 'partition:',partition
-#             print 'res_stack:',res_stack
-#         print "exiting forward loop"
+    else:
+        #We examine the last region.
+        roots = roots_by_region[-1][:]
         
-#         print "good:",good
-        #Yield
-        if good:
-            yield partition
+        if len(roots) < 2:
+            for substructure in NS_generator_with_enforced_planarity(roots_by_region[:-1],dist1,dist2):
+                structure = [[x[:] for x in y] for y in substructure]
+                yield structure
+            return
         
-#         print "entering backward loop"
-        #Move back through all exhausted generators.  They are set to yield 'None' when finished.
-        x = gen_stack[-1].next()#If good, the top generator must be exhausted since the last piece has size 2 or 3.
-        while x == None:
-#             print "---"
-#             print "x:",x
-            del gen_stack[-1]
-            del partition[-1]
-            del res_stack[-1]
-#             print 'partition:',partition
-#             print 'res_stack:',res_stack
-            try:
-                x = gen_stack[-1].next()
-            except IndexError:#If gen_stack is empty, we are finished!
-                return
+        elif len(roots) == 2:
+            for substructure in NS_generator_with_enforced_planarity(roots_by_region[:-1],dist1,dist2):
+                structure = [[x[:] for x in y] for y in substructure]
+                if not set(roots) in dist1:
+                    structure[0].append(roots[:])
+                    yield structure
+                    del structure[0][-1]
+                    if not set(roots) in dist2:
+                        structure[1].append(roots[:])
+                        yield structure
+                        del structure[1][-1]
+                yield structure
+            return
         
-#         print "exiting backward loop"
-        
-        #At this point, we have come back to the top-most generator and prodded it.  Adjust stacks accordingly.
-        #Need to swap current top pieces for partition and res_stack with new things.
-        del partition[-1]
-        partition.append(x[0])
-        del res_stack[-1]
-        if len(res_stack) > 0:
-            res_stack.append(deque(res_stack[-1]))
-            res_stack[-1].extendleft(x[1][::-1])
         else:
-            res_stack.append(deque(x[1]))
+            #We examine the last root.
+
+            #Case 1:  Condition on the last root being in a three-stem.
+            for two in combinations(range(len(roots)-1),2):
+                close_count = 0
+                close_couples = set(frozenset(x) for x in dist1) | set(frozenset(x) for x in dist2)
+                triple_couples = set([frozenset([roots[two[0]],roots[two[1]]])])
+                triple_couples |= set([frozenset([roots[two[0]],roots[-1]])])
+                triple_couples |= set([frozenset([roots[two[1]],roots[-1]])])
+                if len(triple_couples & close_couples) > 2:
+                    continue
+                new_roots_by_region = [x[:] for x in roots_by_region[:-1]]
+                new_roots_by_region.append(roots[:two[0]])
+                new_roots_by_region.append(roots[two[0]+1:two[1]])
+                new_roots_by_region.append(roots[two[1]+1:-1])
+                for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,dist1,dist2):
+                    structure = [[x[:] for x in y] for y in substructure]
+                    structure[2].append([roots[two[0]],roots[two[1]],roots[-1]])
+                    yield structure
+
+            #Case 2:  Condition on the last root being in a new edge.
+            too_close = {x for y in dist1 if roots[-1] in y for x in y}
+            for one in [x for x in range(len(roots)-1) if not roots[x] in too_close]:
+                new_roots_by_region = [x[:] for x in roots_by_region[:-1]]
+                new_roots_by_region.append(roots[:one])
+                new_roots_by_region.append(roots[one+1:-1])
+                for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,dist1,dist2):
+                    structure = [[x[:] for x in y] for y in substructure]
+                    structure[0].append([roots[one],roots[-1]])
+                    yield structure
+
+            #Case 3:  Condition on the last root being in a two-stem.
+            too_close |= {x for y in dist2 if roots[-1] in y for x in y}
+            for one in [x for x in range(len(roots)-1) if not roots[x] in too_close]:
+                new_roots_by_region = [x[:] for x in roots_by_region[:-1]]
+                new_roots_by_region.append(roots[:one])
+                new_roots_by_region.append(roots[one+1:-1])
+                for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,dist1,dist2):
+                    structure = [[x[:] for x in y] for y in substructure]
+                    structure[1].append([roots[one],roots[-1]])
+                    yield structure
+
+
+            #Case 4:  Condition on the last root being in a one-stem.
+            new_roots_by_region = [x[:] for x in roots_by_region[:-1]]
+            new_roots_by_region.append(roots[:-1])
+            for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,dist1,dist2):
+                structure = [[x[:] for x in y] for y in substructure]
+                yield structure
+
+            return
+
 
 
 
@@ -1578,7 +1455,7 @@ def check_all_realizations_from_expanded_c7a4x5x5_case(case):
     partition_di[order-1] |= stem_1[base_border[0]]
     #Again, we could do more restrictions.  But it would probably not be worth the savings for such small additional faces.
 
-    wg.check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,partition_restrictions=partition_di,stem_restrictions=[stem_1,stem_2,stem_3])
+    check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,partition_restrictions=partition_di,stem_restrictions=[stem_1,stem_2,stem_3])
 
 
 
