@@ -1,7 +1,8 @@
 #Some things to-do (before going through line-by-line):
-#    Add routine(s) for checking subgraph realizations.
+#    Reorganize subgraph routines into separate section (2), move configuraiton_identifier into section 1.
 #    check_all_neighborhood_structures_for_FAS needs cleaned up.
 #    makeGraph vs. makeRedCon vs. RedCon
+#    Rename configuration_identifier (core_square_graph?), rename section to be graph essentials
 
 
 #------------------------------------------------------
@@ -29,7 +30,7 @@
 #    configuration_identifier
 
 #SECTION 4:  Checking Core-choosability
-#want    check_all_subgraph_realizations
+#    check_all_subgraph_realizations
 #    check_all_configuration_realizations
 #    check_all_realizations_from_initial_plane_graph
 #    check_all_neighborhood_structures_for_FAS
@@ -1108,6 +1109,61 @@ def configuration_identifier(underlying_graph,identifications):
 
 
 
+
+
+
+
+
+
+
+def check_all_subgraph_realizations(subgraph):
+    begin = time.clock()
+    roots = [v for v in subgraph.vertices() if subgraph.degree(v)==2]
+    dist1 = []
+    dist2 = []
+    for pair in combinations(roots,2):
+        u,v = pair
+        d = subgraph.distance(u,v)
+        if d == 1:
+            dist1.append(set([u,v]))
+        elif d == 2:
+            dist2.append(set([u,v]))
+    count_NS = 0
+    count_r = 0
+    count_good = 0
+    count_bad = 0
+    for structure in NS_generator_no_enforced_planarity(roots,dist1,dist2):
+        count_NS += 1
+        planar_check = Graph(subgraph.edges())
+        for e in structure[0]:
+            planar_check.add_edge(e)
+        for pair in structure[1]:
+            planar_check.add_edge(pair)
+        i = subgraph.order()
+        for triple in structure[2]:
+            planar_check.add_edge([i,triple[0]])
+            planar_check.add_edge([i,triple[1]])
+            planar_check.add_edge([i,triple[2]])
+            i += 1
+        if not planar_check.is_planar():
+            continue
+        else:
+            count_r += 1
+            core_square,f = configuration_identifier(subgraph,structure)
+            y = ch.fChoosableNoPrint(core_square,f,inprocess=4,print_mod=100,maxIS=True,rev=False)
+            if y[0]:
+                count_good += 1
+            else:
+                count_bad += 1
+    print "Done!  Time:",ch.timestring(time.clock()-begin)
+    print "#neighborhood structures attempted:",count_NS
+    print "#realizations:",count_r
+    print "#good:",count_good
+    print "#bad:",count_bad
+    if count_bad:
+        print "Since not all realizations are core-choosable, the subgraph is not necessarily reducible."
+    else:
+        print "Since all realization are core-choosable, the subgraph is reducible!"
 
 
 
