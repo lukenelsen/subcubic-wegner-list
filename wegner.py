@@ -1,5 +1,6 @@
 #Some things to-do (before going through line-by-line):
 #    Add routine(s) for checking subgraph realizations.
+#    check_all_neighborhood_structures_for_FAS needs cleaned up.
 #    makeGraph vs. makeRedCon vs. RedCon
 
 
@@ -75,8 +76,10 @@ from sage.graphs.graph import Graph
 from fractions import Fraction
 from sage.rings.rational import Rational
 
-
-
+from itertools import combinations
+#Used in:
+#    NS_generator_no_enforced_planarity
+#    NS_generator_with_enforced_planarity
 
 
 
@@ -1219,7 +1222,7 @@ def check_all_neighborhood_structures_for_FAS(edges=False,outer_lists=[],include
         print "Nope!  Need to feed in outer_lists!  Routine is under construction."
         #li,dist1,dist2 = get_roots_cyclic(rc_str)
     
-    for idents in identification_generator_multiregion(li,dist1,dist2):
+    for idents in NS_generator_with_enforced_planarity(li,dist1,dist2):
         restriction_flag = False
         for edge in idents[0]:
             if edge[1] in edge_restrictions[edge[0]]:
@@ -1244,7 +1247,7 @@ def check_all_neighborhood_structures_for_FAS(edges=False,outer_lists=[],include
     print ">>> >>> Index   Good   Bad   Time   Identification"
     
     i = 0
-    for idents in identification_generator_multiregion(li,dist1,dist2):
+    for idents in NS_generator_with_enforced_planarity(li,dist1,dist2):
         restriction_flag = False
         for edge in idents[0]:
             if edge[1] in edge_restrictions[edge[0]]:
