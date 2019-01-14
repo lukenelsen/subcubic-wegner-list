@@ -1,5 +1,4 @@
 #Some things to-do (before going through line-by-line):
-#    check_all_neighborhood_structures_for_FAS needs cleaned up.
 #    Adjust printing output to have readable final format.  (also correct "instances" vs "realizations")
 #    makeGraph vs. makeRedCon vs. RedCon
 #    Revise Sections 4 and 5.
@@ -1211,7 +1210,7 @@ def NS_generator_with_enforced_planarity(roots_by_region,dist1,dist2):
 
 
 #Now outer_lists are multiple regions (list of lists).
-def check_all_neighborhood_structures_for_FAS(edges=False,outer_lists=[],include_restrictions=False):
+def check_all_neighborhood_structures_for_FAS(edges,outer_lists,include_restrictions=False):
     begin = time.clock()
     rc = RedCon(edges,"")
     if not include_restrictions:
@@ -1227,24 +1226,21 @@ def check_all_neighborhood_structures_for_FAS(edges=False,outer_lists=[],include
     count_dict = {s:0 for s in keys}
     bad_li = []
     
-    if outer_lists:
-        li = [x[:] for x in outer_lists]
-        G = Graph(rc.underlying_graph)
-        twos = [x for y in li for x in y]
-        dist1 = []
-        dist2 = []
-        for i in range(len(twos)):
-            u = twos[i]
-            for j in range(i+1,len(twos)):
-                v = twos[j]
-                d = G.distance(u,v)
-                if d == 1:
-                    dist1.append(set([u,v]))
-                elif d == 2:
-                    dist2.append(set([u,v]))
-    else:
-        print "Nope!  Need to feed in outer_lists!  Routine is under construction."
-        #li,dist1,dist2 = get_roots_cyclic(rc_str)
+    
+    li = [x[:] for x in outer_lists]
+    G = Graph(rc.underlying_graph)
+    twos = [x for y in li for x in y]
+    dist1 = []
+    dist2 = []
+    for i in range(len(twos)):
+        u = twos[i]
+        for j in range(i+1,len(twos)):
+            v = twos[j]
+            d = G.distance(u,v)
+            if d == 1:
+                dist1.append(set([u,v]))
+            elif d == 2:
+                dist2.append(set([u,v]))
     
     for idents in NS_generator_with_enforced_planarity(li,dist1,dist2):
         restriction_flag = False
