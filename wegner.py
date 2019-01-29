@@ -1,6 +1,6 @@
 #Some things to-do (before going through line-by-line):
 #    Adjust printing output to have readable final format.  (also correct "instances" vs "realizations")
-#    makeGraph vs. makeRedCon vs. RedCon
+#    Make sure that check_c7a4x5x5 stuff is actually checking the right restrictions --- if there is more than one FAS, do the stem restrictions get passed on correctly?  (whatever that means)
 #    Revise Sections 4 and 5.
 #    Check imported modules.
 
@@ -15,8 +15,6 @@
 
 #SECTION 1:  Graph Essentials
 #    graph_power
-#    RedCon
-#    makeRedCon
 #    makeGraph
 #    core_square_graph
 
@@ -173,233 +171,6 @@ def graph_power(G,power):
         print 'Error:  Given power is invalid.'
 
 
-
-
-#edges is the list of edges in the original graph, before it is squared.
-#name is the configuration code as a string.
-class RedCon:
-
-    def __init__(self,edges,name):
-        G = Graph(edges)
-        self.underlying_graph = G
-        self.graph = graph_power(G,2)
-
-        twos = [x for x in G.vertices() if G.degree(x)==2]
-        f = []
-        for v in range(G.order()):
-            fval = 7
-            if v in twos:
-                fval -= 3
-            for u in G.neighbors(v):
-                if u in twos:
-                    fval -=1
-            f.append(fval)
-        self.f = f[:]
-        self.name = name
-        self.info = "Name: " + name + "\nOrder: "+str(G.order())+",  Size: "+str(self.graph.size()) + "\nf: "+str(self.f) + "\nDisparity: "+str(sum(f)-G.order()-self.graph.size())
-
-        self.underlying_graph_stems = Graph(self.underlying_graph.adjacency_matrix())
-        for u in twos:
-            v = self.underlying_graph_stems.order()
-            self.underlying_graph_stems.add_edge([u,v])
-            self.underlying_graph_stems.add_edge([v,v+1])
-            self.underlying_graph_stems.add_edge([v,v+2])
-        #No point in having an f for the stems, since all interior vertices have f=7, stems have f=3, and leaves have f=1.
-
-
-
-
-
-#Take a configuration string and parses it into type_string, central_face_length, and remaining_list.  Then uses these to generate an edge list of the underlying graph.
-#If prefix is 'cxa', does not take any central_face_length but proceeds similarly to type "c".
-#type_string can be "d" (distance), "f" (facial chain), or "c" (central face).
-#central_face_length is an int, the length of the first/central face in the configuration.
-#remaining list is a list of ints and possibly the character 'e' or 'x' (if the configuration type is 'd' or 'c', respectively).
-#Type 'd':  remaining_list should begin with 'e', continue with some number of 'e's, and then end with an int.  ('e' represents an edge increasing the distance.)
-#Type 'f':  remaining_list should be a list of ints.
-#Type 'c':  remaining_list should begin and end with ints, with other entries being ints or 'x'.  ('x' represents a skipped face.)
-#Since all ints are face lengths, they should all be at least 3.
-#Note:  type 'c' currently assumes all non-central faces have length less than 10.
-def makeRedCon(configuration):
-    
-    if configuration[:3] == 'cxa':
-        remaining_list = []
-        for a in configuration[3:]:
-            if a=='x':
-                remaining_list.append(a)
-            else:
-                remaining_list.append(int(a))
-        i=0
-        E=[]
-        last_base = 0
-        last_stem = False  #last_stem marks whether or not we are building the next face adjacent to another non-central face.
-        last_3 = False #last_3 marks whether or not the previous face was a 3-face with a previous face adjacent to it.
-        while i < len(remaining_list):
-            if remaining_list[i]=='x':
-                E.append((last_base,last_base+1))
-                last_base += 1
-                last_stem = False
-                last_3 = False
-            elif not last_stem:#If we skipped a face (or are building our first face)
-                #build length-1 new vertices
-                j=0
-                while j < remaining_list[i]-1:
-                    E.append((last_base+j,last_base+j+1))
-                    j += 1
-                E.append((last_base,last_base+j))
-                last_base += j
-                last_stem = last_base-1
-                #last_3 remains False
-            else:#If we are building a face adjacent to a previous face
-                if last_3:#assumes the next face being built is not a (6-)-face
-                    #build first edge out from previous face
-                    E.append((last_stem,last_stem+4))
-                    last_stem += 4
-                    #build length-4 new vertices
-                    j=0
-                    while j < remaining_list[i]-4:
-                        E.append((last_stem+j,last_stem+j+1))
-                        j += 1
-                    #build last edge (the one on the ignored central face)
-                    E.append((last_base,last_stem+j))
-                    #adjust guides
-                    last_base = last_stem+j
-                    last_stem = last_base-1
-                    last_3 = False
-                else:
-                    if remaining_list[i]==3:#assumes the previous face built was not a (6-)-face
-                        #build first edge out from previous face
-                        E.append((last_stem,last_stem+2))
-                        #build last edge (the one on the ignored central face)
-                        E.append((last_base,last_stem+2))
-                        #adjust guides
-                        last_base = last_stem+2
-                        last_stem -= 1
-                        last_3 = True
-                    else:
-                        #build first edge out from previous face
-                        E.append((last_stem,last_stem+2))
-                        last_stem += 2
-                        #build length-3 new vertices
-                        j=0
-                        while j < remaining_list[i]-3:
-                            E.append((last_stem+j,last_stem+j+1))
-                            j += 1
-                        #build last edge (the one on the ignored central face)
-                        E.append((last_base,last_stem+j))
-                        #adjust guides
-                        last_base = last_stem+j
-                        last_stem = last_base-1
-                        last_3 = False
-            i += 1
-        return RedCon(E,configuration)
-    
-    
-    #else
-    type_string = configuration[0]
-    d = {'d':'e','f':'v','c':'a'}
-    s = configuration.index(d[type_string])
-    central_face_length = int(configuration[1:s])
-    remaining_list = []
-    
-    if type_string=='d':
-        while 'e' in configuration[s:]:
-            remaining_list.append('e')
-            s += 1
-        remaining_list.append(int(configuration[s:]))
-    elif type_string=='f':
-        try:
-            while True:
-                t = configuration[s+1:].index('v')
-                remaining_list.append(int(configuration[s+1:s+1+t]))
-                s += t + 1
-        except ValueError:
-            remaining_list.append(int(configuration[s+1:]))
-    elif type_string=='c':
-        for a in configuration[s+1:]:
-            if a=='x':
-                remaining_list.append(a)
-            else:
-                remaining_list.append(int(a))
-        
-    
-    #Make the first/central face.
-    E = [(0,1),]
-    z = 2
-    while z < central_face_length:
-        E.append((z-1,z))
-        z += 1
-    E.append((0,z-1))
-    
-    
-    #Now the rest.
-    if type_string=='d':
-        i=0
-        while remaining_list[i]=='e':
-            v = 1+max([max(x) for x in E])
-            E.append((v-1,v))
-            i += 1
-        j = 0
-        while j+1 < remaining_list[i]:
-            E.append((v+j,v+j+1))
-            j += 1
-        E.append((v,v+j))
-        
-    elif type_string=='f':
-        for i in range(len(remaining_list)):
-            a = 1+max([max(x) for x in E])
-            E.append((a-2,a))
-            j=0
-            while j<remaining_list[i]-3:
-                E.append((a+j,a+j+1))
-                j+= 1
-            E.append((a-1,a+j))
-        
-    elif type_string=='c':
-        i=0
-        last_stem = False  #last_stem marks whether or not we are building the next face adjacent to another non-central face.
-        last_3 = False #last_3 marks whether or not the previous face was a 3-face with a previous face adjacent to it.
-        while i < len(remaining_list):
-            if remaining_list[i]=='x':
-                last_stem = False
-            elif i < central_face_length-1:
-                if last_3:
-                    E.append((last_stem-1,last_stem+1))
-                    j=0
-                    while j < remaining_list[i]-5:#Assumes 3-faces are not adjacent to 3- or 4-faces.
-                        E.append((last_stem+1+j,last_stem+1+j+1))
-                        j+=1
-                    E.append((i+1,last_stem+j+1))
-                    last_stem += j+1
-                    last_3 = False
-                else:
-                    if not last_stem:#If we skipped a face, then set up the first edge (which acts like the last edge of a previous face).
-                        last_stem = 1+max([max(x) for x in E])
-                        E.append((i,last_stem))
-                    j=0
-                    while j < remaining_list[i]-3:
-                        E.append((last_stem+j,last_stem+j+1))
-                        j+=1
-                    E.append((i+1,last_stem+j))
-                    last_stem += j
-                if remaining_list[i] == 3 and i > 0 and remaining_list[i-1] != 'x':
-                    last_3 = True
-            else:#If we have all possible adjacencies and have reached the last one, then we finish off slightly differently.  Assume no 'x's in configuration.
-                if remaining_list[0] == 3:#Assumes that if there is a 3-face, it will be listed first.  Also assumes that 3-faces are not near each other.
-                    j=0
-                    while j < remaining_list[i]-5:
-                        E.append((last_stem+j,last_stem+j+1))
-                        j+=1
-                    E.append((last_stem+j,central_face_length+1))
-                else:
-                    j=0
-                    while j < remaining_list[i]-4:
-                        E.append((last_stem+j,last_stem+j+1))
-                        j+=1
-                    E.append((last_stem+j,central_face_length))
-            i += 1
-
-    return RedCon(E,configuration)
 
 
 
@@ -658,17 +429,18 @@ def core_square_graph(underlying_graph,identifications):
 
 
 #roots is a list of distinct objects.
-#dist1,dist2 are lists of sets of pairs at distance 1 (respectively distance 2) in the graph.
-#dist1,dist2 get passed on recursively without modification since we don't expect them to be too large.
-def NS_generator_no_enforced_planarity(roots,dist1,dist2):
+#restrictions is a list of three dictionaries of the form {v:S}:
+#    In restrictions[0], S is the set of vertices that v cannot make a new edge with.
+#    In restrictions[1], S is the set of vertices that v cannot make a 2-stem with.
+#    In restrictions[2], S is the set of 2-sets of vertices that v cannot make a 3-stem with.
+def NS_generator_no_enforced_planarity(roots,restrictions=False):
+    if not restrictions:
+        edge_restrictions = {x:set([]) for x in roots}
+        ident_2_restrictions = {x:set([]) for x in roots}
+        ident_3_restrictions = {x:set([]) for x in roots}
+        restrictions = [edge_restrictions,ident_2_restrictions,ident_3_restrictions]
+    
     if len(roots) < 2:
-        yield [[],[],[]]
-        return
-    elif len(roots)==2:
-        if not set(roots) in dist1:
-            yield [[roots[:]],[],[]]
-            if not set(roots) in dist2:
-                yield [[],[roots[:]],[]]
         yield [[],[],[]]
         return
     else:
@@ -676,37 +448,44 @@ def NS_generator_no_enforced_planarity(roots,dist1,dist2):
         
         #Case 1:  Condition on the last root being in a three-stem.
         for two in combinations(range(len(roots)-1),2):
-            close_count = 0
-            close_couples = set(frozenset(x) for x in dist1) | set(frozenset(x) for x in dist2)
-            triple_couples = set([frozenset([roots[two[0]],roots[two[1]]])])
-            triple_couples |= set([frozenset([roots[two[0]],roots[-1]])])
-            triple_couples |= set([frozenset([roots[two[1]],roots[-1]])])
-            if len(triple_couples & close_couples) > 2:
+                
+            if frozenset([roots[x] for x in two]) in restrictions[2][roots[-1]]:
                 continue
+            
+            #close_count = 0
+            #close_couples = set(frozenset(x) for x in dist1) | set(frozenset(x) for x in dist2)
+            #triple_couples = set([frozenset([roots[two[0]],roots[two[1]]])])
+            #triple_couples |= set([frozenset([roots[two[0]],roots[-1]])])
+            #triple_couples |= set([frozenset([roots[two[1]],roots[-1]])])
+            #if len(triple_couples & close_couples) > 2:
+                #continue
+                
             new_roots = roots[:-1]
             del new_roots[two[1]]
             del new_roots[two[0]]
-            for substructure in NS_generator_no_enforced_planarity(new_roots,dist1,dist2):
+            for substructure in NS_generator_no_enforced_planarity(new_roots,restrictions=restrictions):
                 structure = [x[:] for x in substructure]
                 structure[2].append([roots[two[0]],roots[two[1]],roots[-1]])
                 yield structure
         
         #Case 2:  Condition on the last root being in a new edge.
-        too_close = {x for y in dist1 if roots[-1] in y for x in y}
-        for one in [x for x in range(len(roots)-1) if not roots[x] in too_close]:
+        for one in [x for x in range(len(roots)-1) if not roots[x] in restrictions[0][roots[-1]]]:
+        #too_close = {x for y in dist1 if roots[-1] in y for x in y}
+        #for one in [x for x in range(len(roots)-1) if not roots[x] in too_close]:
             new_roots = roots[:-1]
             del new_roots[one]
-            for substructure in NS_generator_no_enforced_planarity(new_roots,dist1,dist2):
+            for substructure in NS_generator_no_enforced_planarity(new_roots,restrictions=restrictions):
                 structure = [x[:] for x in substructure]
                 structure[0].append([roots[one],roots[-1]])
                 yield structure
         
         #Case 3:  Condition on the last root being in a two-stem.
-        too_close |= {x for y in dist2 if roots[-1] in y for x in y}
-        for one in [x for x in range(len(roots)-1) if not roots[x] in too_close]:
+        for one in [x for x in range(len(roots)-1) if not roots[x] in restrictions[1][roots[-1]]]:
+        #too_close |= {x for y in dist2 if roots[-1] in y for x in y}
+        #for one in [x for x in range(len(roots)-1) if not roots[x] in too_close]:
             new_roots = roots[:-1]
             del new_roots[one]
-            for substructure in NS_generator_no_enforced_planarity(new_roots,dist1,dist2):
+            for substructure in NS_generator_no_enforced_planarity(new_roots,restrictions=restrictions):
                 structure = [x[:] for x in substructure]
                 structure[1].append([roots[one],roots[-1]])
                 yield structure
@@ -714,7 +493,7 @@ def NS_generator_no_enforced_planarity(roots,dist1,dist2):
         
         #Case 4:  Condition on the last root being in a one-stem.
         new_roots = roots[:-1]
-        for substructure in NS_generator_no_enforced_planarity(new_roots,dist1,dist2):
+        for substructure in NS_generator_no_enforced_planarity(new_roots,restrictions=restrictions):
             structure = [x[:] for x in substructure]
             yield structure
             
@@ -737,17 +516,42 @@ def check_all_subgraph_realizations(subgraph):
     dist1 = []
     dist2 = []
     for pair in combinations(roots,2):
-        u,v = pair
-        d = subgraph.distance(u,v)
+        d = subgraph.distance(pair[0],pair[1])
         if d == 1:
-            dist1.append(set([u,v]))
+            dist1.append(set(pair))
         elif d == 2:
-            dist2.append(set([u,v]))
+            dist2.append(set(pair))
     count_NS = 0
     count_r = 0
     count_good = 0
     count_bad = 0
-    for structure in NS_generator_no_enforced_planarity(roots,dist1,dist2):
+    
+    
+    
+    edge_restrictions = {x:set([]) for x in subgraph.vertices()}
+    ident_2_restrictions =  {x:set([]) for x in subgraph.vertices()}
+    ident_3_restrictions =  {x:set([]) for x in subgraph.vertices()}
+    
+    close_couples = set([])
+    for pair in dist1:
+        for v in pair:
+            edge_restrictions[v] |= pair
+            ident_2_restrictions[v] |= pair
+        close_couples |= set([frozenset(pair),])
+    for pair in dist2:
+        for v in pair:
+            ident_2_restrictions[v] |= pair
+        close_couples |= set([frozenset(pair),])
+    for triple in combinations(roots,3):
+        triple_couples = set([frozenset([triple[0],triple[1]])])
+        triple_couples |= set([frozenset([triple[0],triple[2]])])
+        triple_couples |= set([frozenset([triple[1],triple[2]])])
+        if len(triple_couples & close_couples) > 2:
+            ident_3_restrictions[triple[0]] |= set([frozenset(triple[1:]),])
+            ident_3_restrictions[triple[1]] |= set([frozenset([triple[0],triple[-1]]),])
+            ident_3_restrictions[triple[2]] |= set([frozenset(triple[:2]),])
+    
+    for structure in NS_generator_no_enforced_planarity(roots,restrictions=[edge_restrictions,ident_2_restrictions,ident_3_restrictions]):
         count_NS += 1
         planar_check = Graph(subgraph.edges())
         for e in structure[0]:
@@ -1094,9 +898,17 @@ def get_outer_region_roots(graph,specified_faces):
 
 
 #roots_by_region is a list of lists, each of distinct objects.
-#dist1,dist2 are lists of sets of pairs at distance 1 (respectively distance 2) in the graph.
-#dist1,dist2 get passed on recursively without modification since we don't expect them to be too large.
-def NS_generator_with_enforced_planarity(roots_by_region,dist1,dist2):
+#restrictions is a list of three dictionaries of the form {v:S}:
+#    In restrictions[0], S is the set of vertices that v cannot make a new edge with.
+#    In restrictions[1], S is the set of vertices that v cannot make a 2-stem with.
+#    In restrictions[2], S is the set of 2-sets of vertices that v cannot make a 3-stem with.
+def NS_generator_with_enforced_planarity(roots_by_region,restrictions=False):
+    if not restrictions:
+        edge_restrictions = {x:set([]) for y in roots_by_region for x in y}
+        ident_2_restrictions = {x:set([]) for y in roots_by_region for x in y}
+        ident_3_restrictions = {x:set([]) for y in roots_by_region for x in y}
+        restrictions = [edge_restrictions,ident_2_restrictions,ident_3_restrictions]
+    
     if len(roots_by_region) == 0:
         yield [[],[],[]]
         return
@@ -1105,22 +917,8 @@ def NS_generator_with_enforced_planarity(roots_by_region,dist1,dist2):
         roots = roots_by_region[-1][:]
         
         if len(roots) < 2:
-            for substructure in NS_generator_with_enforced_planarity(roots_by_region[:-1],dist1,dist2):
+            for substructure in NS_generator_with_enforced_planarity(roots_by_region[:-1],restrictions=restrictions):
                 structure = [[x[:] for x in y] for y in substructure]
-                yield structure
-            return
-        
-        elif len(roots) == 2:
-            for substructure in NS_generator_with_enforced_planarity(roots_by_region[:-1],dist1,dist2):
-                structure = [[x[:] for x in y] for y in substructure]
-                if not set(roots) in dist1:
-                    structure[0].append(roots[:])
-                    yield structure
-                    del structure[0][-1]
-                    if not set(roots) in dist2:
-                        structure[1].append(roots[:])
-                        yield structure
-                        del structure[1][-1]
                 yield structure
             return
         
@@ -1129,40 +927,35 @@ def NS_generator_with_enforced_planarity(roots_by_region,dist1,dist2):
 
             #Case 1:  Condition on the last root being in a three-stem.
             for two in combinations(range(len(roots)-1),2):
-                close_count = 0
-                close_couples = set(frozenset(x) for x in dist1) | set(frozenset(x) for x in dist2)
-                triple_couples = set([frozenset([roots[two[0]],roots[two[1]]])])
-                triple_couples |= set([frozenset([roots[two[0]],roots[-1]])])
-                triple_couples |= set([frozenset([roots[two[1]],roots[-1]])])
-                if len(triple_couples & close_couples) > 2:
+                
+                if frozenset([roots[x] for x in two]) in restrictions[2][roots[-1]]:
                     continue
+                
                 new_roots_by_region = [x[:] for x in roots_by_region[:-1]]
                 new_roots_by_region.append(roots[:two[0]])
                 new_roots_by_region.append(roots[two[0]+1:two[1]])
                 new_roots_by_region.append(roots[two[1]+1:-1])
-                for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,dist1,dist2):
+                for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,restrictions=restrictions):
                     structure = [[x[:] for x in y] for y in substructure]
                     structure[2].append([roots[two[0]],roots[two[1]],roots[-1]])
                     yield structure
 
             #Case 2:  Condition on the last root being in a new edge.
-            too_close = {x for y in dist1 if roots[-1] in y for x in y}
-            for one in [x for x in range(len(roots)-1) if not roots[x] in too_close]:
+            for one in [x for x in range(len(roots)-1) if not roots[x] in restrictions[0][roots[-1]]]:
                 new_roots_by_region = [x[:] for x in roots_by_region[:-1]]
                 new_roots_by_region.append(roots[:one])
                 new_roots_by_region.append(roots[one+1:-1])
-                for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,dist1,dist2):
+                for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,restrictions=restrictions):
                     structure = [[x[:] for x in y] for y in substructure]
                     structure[0].append([roots[one],roots[-1]])
                     yield structure
 
             #Case 3:  Condition on the last root being in a two-stem.
-            too_close |= {x for y in dist2 if roots[-1] in y for x in y}
-            for one in [x for x in range(len(roots)-1) if not roots[x] in too_close]:
+            for one in [x for x in range(len(roots)-1) if not roots[x] in restrictions[1][roots[-1]]]:
                 new_roots_by_region = [x[:] for x in roots_by_region[:-1]]
                 new_roots_by_region.append(roots[:one])
                 new_roots_by_region.append(roots[one+1:-1])
-                for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,dist1,dist2):
+                for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,restrictions=restrictions):
                     structure = [[x[:] for x in y] for y in substructure]
                     structure[1].append([roots[one],roots[-1]])
                     yield structure
@@ -1171,7 +964,7 @@ def NS_generator_with_enforced_planarity(roots_by_region,dist1,dist2):
             #Case 4:  Condition on the last root being in a one-stem.
             new_roots_by_region = [x[:] for x in roots_by_region[:-1]]
             new_roots_by_region.append(roots[:-1])
-            for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,dist1,dist2):
+            for substructure in NS_generator_with_enforced_planarity(new_roots_by_region,restrictions=restrictions):
                 structure = [[x[:] for x in y] for y in substructure]
                 yield structure
 
@@ -1207,16 +1000,16 @@ def NS_generator_with_enforced_planarity(roots_by_region,dist1,dist2):
 
 
 
-
+#specific to configurations rather than subgraphs
 
 #Now outer_lists are multiple regions (list of lists).
 def check_all_neighborhood_structures_for_FAS(edges,outer_lists,include_restrictions=False):
     begin = time.clock()
-    rc = RedCon(edges,"")
+    G = Graph(edges)
     if not include_restrictions:
-        edge_restrictions = {x:set([]) for x in rc.underlying_graph.vertices()}
-        ident_2_restrictions =  {x:set([]) for x in rc.underlying_graph.vertices()}
-        ident_3_restrictions =  {x:set([]) for x in rc.underlying_graph.vertices()}
+        edge_restrictions = {x:set([]) for x in G.vertices()}
+        ident_2_restrictions =  {x:set([]) for x in G.vertices()}
+        ident_3_restrictions =  {x:set([]) for x in G.vertices()}
     else:
         edge_restrictions,ident_2_restrictions,ident_3_restrictions = include_restrictions
     count = 0
@@ -1228,7 +1021,6 @@ def check_all_neighborhood_structures_for_FAS(edges,outer_lists,include_restrict
     
     
     li = [x[:] for x in outer_lists]
-    G = Graph(rc.underlying_graph)
     twos = [x for y in li for x in y]
     dist1 = []
     dist2 = []
@@ -1242,54 +1034,76 @@ def check_all_neighborhood_structures_for_FAS(edges,outer_lists,include_restrict
             elif d == 2:
                 dist2.append(set([u,v]))
     
-    for idents in NS_generator_with_enforced_planarity(li,dist1,dist2):
-        restriction_flag = False
-        for edge in idents[0]:
-            if edge[1] in edge_restrictions[edge[0]]:
-                restriction_flag = True
-                break
-        if restriction_flag:
-            continue
-        for pair in idents[1]:
-            if pair[1] in ident_2_restrictions[pair[0]]:
-                restriction_flag = True
-                break
-        if restriction_flag:
-            continue
-        for triple in idents[2]:
-            if set(triple[1:]) in [set(x) for x in ident_3_restrictions[triple[0]]]:
-                restriction_flag = True
-                break
-        if restriction_flag:
-            continue
+    close_couples = set([])
+    for pair in dist1:
+        for v in pair:
+            edge_restrictions[v] |= pair
+            ident_2_restrictions[v] |= pair
+        close_couples |= set([frozenset(pair),])
+    for pair in dist2:
+        for v in pair:
+            ident_2_restrictions[v] |= pair
+        close_couples |= set([frozenset(pair),])
+    for roots in li:
+        for triple in combinations(roots,3):
+            triple_couples = set([frozenset([triple[0],triple[1]])])
+            triple_couples |= set([frozenset([triple[0],triple[2]])])
+            triple_couples |= set([frozenset([triple[1],triple[2]])])
+            if len(triple_couples & close_couples) > 2:
+                ident_3_restrictions[triple[0]] |= set([frozenset(triple[1:]),])
+                ident_3_restrictions[triple[1]] |= set([frozenset([triple[0],triple[-1]]),])
+                ident_3_restrictions[triple[2]] |= set([frozenset(triple[:2]),])
+    
+    
+    
+    for idents in NS_generator_with_enforced_planarity(li,restrictions=[edge_restrictions,ident_2_restrictions,ident_3_restrictions]):
+        #restriction_flag = False
+        #for edge in idents[0]:
+            #if edge[1] in edge_restrictions[edge[0]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
+        #for pair in idents[1]:
+            #if pair[1] in ident_2_restrictions[pair[0]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
+        #for triple in idents[2]:
+            #if set(triple[1:]) in [set(x) for x in ident_3_restrictions[triple[0]]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
         count += 1
     print ">>> There are "+str(count)+" restricted identifications to check.  (Took "+ch.timestring(time.clock()-begin)+" to count.)  Starting:"
     print ">>> >>> Index   Good   Bad   Time   Identification"
     
     i = 0
-    for idents in NS_generator_with_enforced_planarity(li,dist1,dist2):
-        restriction_flag = False
-        for edge in idents[0]:
-            if edge[1] in edge_restrictions[edge[0]]:
-                restriction_flag = True
-                break
-        if restriction_flag:
-            continue
-        for pair in idents[1]:
-            if pair[1] in ident_2_restrictions[pair[0]]:
-                restriction_flag = True
-                break
-        if restriction_flag:
-            continue
-        for triple in idents[2]:
-            if set(triple[1:]) in [set(x) for x in ident_3_restrictions[triple[0]]]:
-                restriction_flag = True
-                break
-        if restriction_flag:
-            continue
+    for idents in NS_generator_with_enforced_planarity(li,restrictions=[edge_restrictions,ident_2_restrictions,ident_3_restrictions]):
+        #restriction_flag = False
+        #for edge in idents[0]:
+            #if edge[1] in edge_restrictions[edge[0]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
+        #for pair in idents[1]:
+            #if pair[1] in ident_2_restrictions[pair[0]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
+        #for triple in idents[2]:
+            #if set(triple[1:]) in [set(x) for x in ident_3_restrictions[triple[0]]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
         i += 1
-        G,f = core_square_graph(rc.underlying_graph,idents)
-        y = ch.fChoosableNoPrint(G,f,inprocess=4,print_mod=100,maxIS=True,rev=False)
+        G_sq,f = core_square_graph(G,idents)
+        y = ch.fChoosableNoPrint(G_sq,f,inprocess=4,print_mod=100,maxIS=True,rev=False)
         if y[0]:
             good_count += 1
         else:
@@ -1414,10 +1228,10 @@ def check_all_realizations_from_expanded_c7a4x5x5_case(case):
     stem_2 = {x:set(roots)-{x,} for x in roots}
     stem_2[6].remove(8)
     stem_2[8].remove(6)
-    stem_3 = {x:{(roots[y],z) for y in range(len(roots)-1) if not roots[y]==x for z in roots[y+1:] if not z==x} for x in roots}
-    stem_3[6].remove((8,12))
-    stem_3[8].remove((6,12))
-    stem_3[12].remove((6,8))
+    stem_3 = {x:{frozenset([roots[y],z]) for y in range(len(roots)-1) if not roots[y]==x for z in roots[y+1:] if not z==x} for x in roots}
+    stem_3[6].remove(frozenset([8,12]))
+    stem_3[8].remove(frozenset([6,12]))
+    stem_3[12].remove(frozenset([6,8]))
 
 
     #Now, which case are we in?
@@ -2566,7 +2380,7 @@ def fnmatch_gen(substring, string):
 
 
 
-def run_discharging_analysis(huge,exclude=[],show_graphs=False):
+def run_discharging_analysis(huge,exclude=[]):
     #Initialize list and dictionaries of reducible configurations.
     RedConList, ChainsDict, RCID, max_chain_length = initializeRedConList(huge,exclude)
     UsedForSmallFacesHappy = UsedInHappy3 | UsedInHappy4 | UsedInHappy5
@@ -2751,14 +2565,7 @@ def run_discharging_analysis(huge,exclude=[],show_graphs=False):
                 print "    * "+t
         else:
             print s+" was not used in the discharging analysis."
-        if show_graphs:
-            print "The underlying (induced) graph of "+s+" is shown below:"
-            rc = makeRedCon(s)
-            print "f:",rc.f
-            rc.underlying_graph.show()
 
-    if show_graphs:
-        print "Time for printing graphs:  "+ch.timestring(time.clock()-rebegin)
     return NotUsed
 
 
