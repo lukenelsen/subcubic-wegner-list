@@ -901,7 +901,7 @@ def get_outer_region_roots(graph,specified_faces):
 #restrictions is a list of three dictionaries of the form {v:S}:
 #    In restrictions[0], S is the set of vertices that v cannot make a new edge with.
 #    In restrictions[1], S is the set of vertices that v cannot make a 2-stem with.
-#    In restrictions[2], S is the set of 2-sets of vertices that v cannot make a 3-stem with.
+#    In restrictions[2], S is the set of 2-frozensets of vertices that v cannot make a 3-stem with.
 def NS_generator_with_enforced_planarity(roots_by_region,restrictions=False):
     if not restrictions:
         edge_restrictions = {x:set([]) for y in roots_by_region for x in y}
@@ -1162,13 +1162,42 @@ def check_all_realizations_from_initial_plane_graph(g,open_spine=False,partition
     for realization in configuration_FAS_generator(g,open_spine=open_spine,include_restrictions=partition_restrictions):
         root_lists = get_outer_region_roots(realization[0],realization[1])
         partition,id_dict = realization[2:4]
-        #print stem_restrictions[2]
-        ##Since base vertices are in front of ordering and not identified with each other,
-        ##the stem_restrictions dictionaries don't need altered.
-        #stem_rest_1 = {x:{id_dict[z] for y in partition[x] for z in stem_restrictions[0][y]} for x in range(len(partition))}
-        #stem_rest_2 = {x:{id_dict[z] for y in partition[x] for z in stem_restrictions[1][y]} for x in range(len(partition))}
-        #stem_rest_3 = {x:{(id_dict[z[0]],id_dict[z[1]]) for y in partition[x] for z in stem_restrictions[2][y]} for x in range(len(partition))}
-        check = check_all_neighborhood_structures_for_FAS(edges=realization[0].edges(),outer_lists=root_lists,include_restrictions=stem_restrictions)
+        
+        print id_dict
+
+        #if stem_restrictions:#if coming from the c7a4x5x5 cases
+            ##We need to make sure that the stem restrictions we were given are preserved, since an FAS might have identified some core vertices and shifted the labels.  (Even though the original base vertices stay in order, one new vertex from the additional face might displace a higher-labeled new vertex from the additional face.  And we are passing on restrictions with these vertices.)
+            ##print "id_dict:",id_dict
+            ##print "stem_restrictions:"
+            ##print "stem_1"
+            ##for v in stem_restrictions[0].keys():
+                ##print v,":",stem_restrictions[0][v]
+            ##print "stem_2"
+            ##for v in stem_restrictions[1].keys():
+                ##print v,":",stem_restrictions[1][v]
+            ##print "stem_3"
+            ##for v in stem_restrictions[2].keys():
+                ##print v,":",stem_restrictions[2][v]
+            ##print
+            
+            ##stem_rest_1 = {}
+            ##for x in range(len(partition)):
+                ##print "x:",x
+                ##for y in partition[x]:
+                    ##print "    y:",y
+                    ##for z in stem_restrictions[1][y]:
+                        ##print "        z:",z,"   id_dict[z]:",id_dict[z]
+            
+            #stem_rest_1 = {x:{id_dict[z] for y in partition[x] for z in stem_restrictions[0][y]} for x in range(len(partition))}
+            #stem_rest_2 = {x:{id_dict[z] for y in partition[x] for z in stem_restrictions[1][y]} for x in range(len(partition))}
+            #stem_rest_3 = {x:{frozenset([id_dict[w] for w in z]) for y in partition[x] for z in stem_restrictions[2][y]} for x in range(len(partition))}
+            #new_stem_restrictions = [stem_rest_1,stem_rest_2,stem_rest_3]
+        #else:
+            #new_stem_restrictions = False
+            
+        new_stem_restrictions = stem_restrictions
+        
+        check = check_all_neighborhood_structures_for_FAS(edges=realization[0].edges(),outer_lists=root_lists,include_restrictions=new_stem_restrictions)
         count += 1
         if not check:
             bad_count += 1
@@ -1217,7 +1246,7 @@ def check_all_configuration_realizations(config_str):
 def check_all_realizations_from_expanded_c7a4x5x5_case(case):
     print "Expanding scope around c7a4x5x5:"
 
-    order,edges,spine,roots,faces = wg.makeGraph('c7a4x5x5')#spine won't be important here.
+    order,edges,spine,roots,faces = makeGraph('c7a4x5x5')#spine won't be important here.
     open_spine = False
     roots.sort()
 
@@ -1233,6 +1262,13 @@ def check_all_realizations_from_expanded_c7a4x5x5_case(case):
     stem_3[8].remove(frozenset([6,12]))
     stem_3[12].remove(frozenset([6,8]))
 
+    #Even for non-roots, we want to have the stem_restrictions defined in check_all_realizations_from_initial_plane_graph.
+    for v in [x for x in range(order) if not x in roots]:
+        stem_1[v] = set([])
+        stem_2[v] = set([])
+        stem_3[v] = set([])
+    
+    
 
     #Now, which case are we in?
     #A \ne 3 by identification case.
@@ -1348,10 +1384,19 @@ def check_all_realizations_from_expanded_c7a4x5x5_case(case):
         stem_2[v] = set([])
         stem_3[v] = set([])
     #Actually, we'll go ahead and add some basic restrictions: new vertices adjacent to the base can't 
-    #be identified with vertices from the base that the neighbors couldn't have an edge to, because
-    #this will make such an edge.
+    #be identified with vertices from the original that the base neighbors couldn't have an edge to, 
+    #because this will make such an edge.
     partition_di[old_order] |= stem_1[base_border[-1]]
     partition_di[order-1] |= stem_1[base_border[0]]
+    #Also, new vertices adjacent to the base can't be make an edge with vertices from the original that
+    #the base neighbors couldn't have a 2-stem with, because this will make such a 2-stem.
+    stem_1[old_order] |= stem_2[base_border[-1]]
+    stem_1[order-1] |= stem_2[base_border[0]]
+    #Also, new vertices distance 2 from the base can't be identified with vertices from the original 
+    #that the base neighbors (distance 2) couldn't have a 2-stem with, because this will make such a 2-stem.
+    if old_order - order > 1:
+        partition_di[old_order+1] |= stem_2[base_border[-1]]
+        partition_di[order-2] |= stem_2[base_border[0]]
     #Again, we could do more restrictions.  But it would probably not be worth the savings for such small additional faces.
 
     check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,partition_restrictions=partition_di,stem_restrictions=[stem_1,stem_2,stem_3])
