@@ -752,7 +752,8 @@ def configuration_FAS_generator(g,open_spine=False,include_restrictions={}):
     countc = 0
     countt = 0
     countp = 0
-    print "  Partitions   Realizations   Time"
+    print "#Partitions     #FAS     Time (Cum.)"
+    print "..........0        0     begin!"
     begin = time.clock()
     for partition in restricted_partitions(range(g[0]),di):
         count += 1
@@ -816,12 +817,21 @@ def configuration_FAS_generator(g,open_spine=False,include_restrictions={}):
                     
                 if newer_G.is_planar():
                     countp += 1
-                    print ">>> Realization #%d"%(countp),count
-                    print ">>> Partition: %s"%(str(partition))
-                    print ">>> Edges: %s"%(str(new_G.edges()))
+                    print
+                    print "      >>> "+"Realization #%d"%(countp),"(Partition #%d)"%(count)
+                    print " "*10+"Partition: %s"%(str(partition))
+                    ed = [e[:2] for e in new_G.edges()]
+                    ed_str_li = []
+                    rows = len(ed)/10
+                    for x in range(rows):
+                        ed_str_li.append(str(ed[10*x:10*(x+1)])[1:-1]+",")
+                    ed_str_li.append(str(ed[10*rows:])[1:-1])
+                    print " "*10+"Edges: %s"%(ed_str_li[0])
+                    for s in ed_str_li[1:]:
+                        print " "*17+s
                     yield new_G,nonid_faces,partition,id_dict
-        if count % 100000 == 0:
-            print " "*(12-len(str(count)))+str(count)+" "*(15-len(str(countp)))+str(countp)+"  "+ch.timestring(time.clock()-begin)
+        if count % 10000 == 0:
+            print "."*max(11-len(str(count)),0)+str(count)+" "*max(9-len(str(countp)),0)+str(countp)+"     "+ch.timestring(time.clock()-begin)
     end = time.clock()
     t = end-begin
     #print "Total partitions:   ",count
@@ -1077,8 +1087,8 @@ def check_all_neighborhood_structures_for_FAS(edges,outer_lists,include_restrict
         #if restriction_flag:
             #continue
         count += 1
-    print ">>> There are "+str(count)+" restricted identifications to check.  (Took "+ch.timestring(time.clock()-begin)+" to count.)  Starting:"
-    print ">>> >>> Index   Good   Bad   Time   Identification"
+    print " "*10+"There are "+str(count)+" neighborhood structures to check.  (Took "+ch.timestring(time.clock()-begin)+" to count.)"
+    print " "*15+"Index      Good   Bad   Time (Cum.)   Identification"
     
     i = 0
     for idents in NS_generator_with_enforced_planarity(li,restrictions=[edge_restrictions,ident_2_restrictions,ident_3_restrictions]):
@@ -1110,16 +1120,17 @@ def check_all_neighborhood_structures_for_FAS(edges,outer_lists,include_restrict
             bad_count += 1
             bad_li.append(idents)
         count_dict[y[1]] += 1
-        print ">>> >>> "+" "*(len(str(count))-len(str(i)))+str(i)+" "*(len(str(count))-len(str(good_count)))+"   "+str(good_count)+"   "+" "*(len(str(count))-len(str(bad_count)))+str(bad_count)+"   "+ch.timestring(time.clock()-begin)+"   "+str(idents)
+        ti = ch.timestring(time.clock()-begin)
+        print " "*(20-len(str(i)))+str(i)+" "*(10-len(str(good_count)))+str(good_count)+" "*(6-len(str(bad_count)))+str(bad_count)+" "*(17-len(ti))+ti+"   "+str(idents)
     
     #print "\n"*7
     #print "Total:",count
     #print "Bad:",bad_count
     #print "Good:",good_count
     if count == good_count:
-        print ">>> >>> -->  Good for all stem identifications!"
+        print "      >>> Good for all stem identifications!"
     else:
-        print ">>> >>> -->  Uh-oh!  Problem!"
+        print "      >>> Uh-oh!  Problem!"
     print
     #for s in keys:
         #print s+":",count_dict[s]
@@ -1130,13 +1141,13 @@ def check_all_neighborhood_structures_for_FAS(edges,outer_lists,include_restrict
         #for x in bad_li:
             #print x
     #print
-    if good_count == count:
-        #print "Complete:  "+rc_str+" is GOOD."
-        return True
-    else:
-        #print "Complete:  "+rc_str+" is BAD."
-        return False
-
+    #if good_count == count:
+        ##print "Complete:  "+rc_str+" is GOOD."
+        #return True
+    #else:
+        ##print "Complete:  "+rc_str+" is BAD."
+        #return False
+    return count,bad_count
 
 
 
@@ -1157,13 +1168,13 @@ def check_all_neighborhood_structures_for_FAS(edges,outer_lists,include_restrict
 #stem_restrictions[2] holds vert:{set of forbidden vertices (as 2-sets) to form 3-stem-identification with vert}
 def check_all_realizations_from_initial_plane_graph(g,open_spine=False,partition_restrictions={},stem_restrictions=False):
     begin = time.clock()
-    count = 0
+    FAS_count = 0
+    realization_count = 0
     bad_count = 0
+    totals_str = "     FAS#               #NS       #Bad\n"
     for realization in configuration_FAS_generator(g,open_spine=open_spine,include_restrictions=partition_restrictions):
         root_lists = get_outer_region_roots(realization[0],realization[1])
         partition,id_dict = realization[2:4]
-        
-        print id_dict
 
         #if stem_restrictions:#if coming from the c7a4x5x5 cases
             ##We need to make sure that the stem restrictions we were given are preserved, since an FAS might have identified some core vertices and shifted the labels.  (Even though the original base vertices stay in order, one new vertex from the additional face might displace a higher-labeled new vertex from the additional face.  And we are passing on restrictions with these vertices.)
@@ -1197,17 +1208,31 @@ def check_all_realizations_from_initial_plane_graph(g,open_spine=False,partition
             
         new_stem_restrictions = stem_restrictions
         
-        check = check_all_neighborhood_structures_for_FAS(edges=realization[0].edges(),outer_lists=root_lists,include_restrictions=new_stem_restrictions)
-        count += 1
-        if not check:
-            bad_count += 1
+        NS_count,bad_NS_count = check_all_neighborhood_structures_for_FAS(edges=realization[0].edges(),outer_lists=root_lists,include_restrictions=new_stem_restrictions)
+        FAS_count += 1
+        realization_count += NS_count
+        bad_count += bad_NS_count
+        FAS_count_str = str(FAS_count)
+        NS_count_str = str(NS_count)
+        bad_NS_count_str = str(bad_NS_count)
+        totals_str += " "*(max(9-len(FAS_count_str),0))+FAS_count_str+" "*(max(18-len(NS_count_str),0))+NS_count_str+" "*(max(11-len(bad_NS_count_str),0))+bad_NS_count_str+"\n"
     end = time.clock()
-    print "Done!  %d realizations."%(count)
+    print "Done!\nSummary:"
+    print totals_str
+    print "Totals:"
+    print "     #FAS     #Realizations       #Bad"
+    FAS_count_str = str(FAS_count)
+    realization_count_str = str(realization_count)
+    bad_count_str = str(bad_count)
+    print " "*(max(9-len(FAS_count_str),0))+FAS_count_str+" "*(max(18-len(realization_count_str),0))+realization_count_str+" "*(max(11-len(bad_count_str),0))+bad_count_str
+    
+    
+    
     if bad_count > 0:
-        print "Nope!  There were %d bad realizations!"%(bad_count)
+        print "\nNope!  Some realizations are not core-choosable."
     else:
-        print "Good!  All instances check out!"
-    print ch.timestring(end-begin)
+        print "\nGood!  All realizations are core-choosable!"
+    print "Time: "+ch.timestring(end-begin)
 
 
 
@@ -1220,7 +1245,8 @@ def check_all_realizations_from_initial_plane_graph(g,open_spine=False,partition
 
 
 def check_all_configuration_realizations(config_str):
-    print config_str
+    print "Configuration:",config_str
+    print "Checking all realizations for core-choosability.\n"
     g = makeGraph(config_str)
     if config_str[1]=='x':
         open_spine=True
