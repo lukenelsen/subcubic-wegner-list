@@ -1,6 +1,4 @@
 #Some things to-do (before going through line-by-line):
-#    Adjust printing output to have readable final format.  (also correct "instances" vs "realizations")
-#    Make sure that check_c7a4x5x5 stuff is actually checking the right restrictions --- if there is more than one FAS, do the stem restrictions get passed on correctly?  (whatever that means)
 #    Revise Sections 4 and 5.
 #    Check imported modules.
 
@@ -1121,7 +1119,7 @@ def check_all_neighborhood_structures_for_FAS(edges,outer_lists,include_restrict
             bad_li.append(idents)
         count_dict[y[1]] += 1
         ti = ch.timestring(time.clock()-begin)
-        print " "*(20-len(str(i)))+str(i)+" "*(10-len(str(good_count)))+str(good_count)+" "*(6-len(str(bad_count)))+str(bad_count)+" "*(17-len(ti))+ti+"   "+str(idents)
+        print " "*(20-len(str(i)))+str(i)+" "*(10-len(str(good_count)))+str(good_count)+" "*(6-len(str(bad_count)))+str(bad_count)+" "*(14-len(ti))+ti+"   "+str(idents)
     
     #print "\n"*7
     #print "Total:",count
