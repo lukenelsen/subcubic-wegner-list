@@ -45,10 +45,12 @@ for line in sys.stdin:
         CNS_count += 1
     else:
         brute_count += 1
+    s = ""
     if not x[0]:
+        s = "   flag"
         bad_count += 1
         bad_list.append((int(count),line[:]))
-    print ch4.timestring(time.clock()-begin)+"   Total#: "+str(count)+"   #Bad: "+str(bad_count)+"   #CNS: "+str(CNS_count)+"   #Brute: "+str(brute_count)
+    print ch4.timestring(time.clock()-begin)+"   Total#: "+str(count)+"   #Bad: "+str(bad_count)+"   #CNS: "+str(CNS_count)+"   #Brute: "+str(brute_count)+s
 print "Done!"
 if bad_count:
     print "Bad graphs:"
