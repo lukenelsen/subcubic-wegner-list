@@ -733,23 +733,17 @@ def configuration_FAS_generator(g,open_spine=False,include_restrictions={}):
     for x in include_restrictions.keys():
         di[x] |= set(include_restrictions[x])
     if open_spine:
-        if open_spine='555555':
-            #In this special case, only the spine ends can be identified (forces 5:565, but we don't want configuration reducibility to depend on others).
+        if open_spine:
+            #In this case, vertices which are joining two specified outer faces cannot be identified with anything else on the spine.
             init_spec_face = 1
             the_spine = g[4][0]
-            di[the_spine[0]] |= set(the_spine[1:-1])
-            di[the_spine[-1]] |= set(the_spine[1:-1])
-            for v in the_spine[1:-1]:
-                di[v] |= set(the_spine)
-        else:
-            init_spec_face = 1
-            the_spine = g[4][0]
-            di[the_spine[0]] |= set(the_spine[0:3])
-            di[the_spine[1]] |= set(the_spine[0:4])
-            di[the_spine[-2]] |= set(the_spine[-4:])
-            di[the_spine[-1]] |= set(the_spine[-3:])
-            for v in the_spine[2:-2]:
-                di[v] |= set(the_spine[v-2:v+3])
+            spine_list = open_spine[3:]
+            forbidden = [x for x in range(1,len(spine_list)) if spine_list[x-1]!='x' and spine_list[x]!='x']
+            for v in the_spine:
+                if v in forbidden:
+                    di[v] |= set(the_spine)
+                else:
+                    di[v] |= set(forbidden)
     else:
         init_spec_face = 0
     for face in g[4][init_spec_face:]:
@@ -841,7 +835,7 @@ def configuration_FAS_generator(g,open_spine=False,include_restrictions={}):
             print "."*max(11-len(str(count)),0)+str(count)+" "*max(9-len(str(countp)),0)+str(countp)+"     "+ch.timestring(time.clock()-begin)
     end = time.clock()
     t = end-begin
-    #print "Total partitions:   ",count
+    print "Total #partitions:   ",count
     #print "Passed cubic test:  ",countc
     #print "Passed trapped test:",countt
     #print "Passed planar test: ",countp
@@ -1256,10 +1250,7 @@ def check_all_configuration_realizations(config_str):
     print "Checking all realizations for core-choosability.\n"
     g = makeGraph(config_str)
     if config_str[1]=='x':
-        if config_str=='cxa555555':
-            open_spine='555555'
-        else:
-            open_spine=True
+        open_spine=config_str
     else:
         open_spine=False
     check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,partition_restrictions={},stem_restrictions=False)
