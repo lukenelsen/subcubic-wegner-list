@@ -733,17 +733,25 @@ def configuration_FAS_generator(g,open_spine=False,include_restrictions={}):
     for x in include_restrictions.keys():
         di[x] |= set(include_restrictions[x])
     if open_spine:
-        if open_spine:
-            #In this case, vertices which are joining two specified outer faces cannot be identified with anything else on the spine.
-            init_spec_face = 1
-            the_spine = g[4][0]
-            spine_list = open_spine[3:]
-            forbidden = [x for x in range(1,len(spine_list)) if spine_list[x-1]!='x' and spine_list[x]!='x']
-            for v in the_spine:
-                if v in forbidden:
-                    di[v] |= set(the_spine)
-                else:
-                    di[v] |= set(forbidden)
+        init_spec_face = 1
+        the_spine = g[4][0]
+
+        #In this case, vertices which are joining two specified outer faces cannot be identified with anything else on the spine.
+        spine_list = open_spine[3:]
+        forbidden = [x for x in range(1,len(spine_list)) if spine_list[x-1]!='x' and spine_list[x]!='x']
+        for v in the_spine:
+            if v in forbidden:
+                di[v] |= set(the_spine)
+            else:
+                di[v] |= set(forbidden)
+
+        #In addtion, vertices can't be identified which are too close.
+        di[the_spine[0]] |= set(the_spine[0:3])
+        di[the_spine[1]] |= set(the_spine[0:4])
+        di[the_spine[-2]] |= set(the_spine[-4:])
+        di[the_spine[-1]] |= set(the_spine[-3:])
+        for i in range(2,len(the_spine)-2):
+            di[the_spine[i]] |= set(the_spine[i-2:i+3])
     else:
         init_spec_face = 0
     for face in g[4][init_spec_face:]:
