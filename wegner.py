@@ -35,8 +35,11 @@
 #
 #  Subsection C:  Checking All Realizations
 #    check_all_neighborhood_structures_for_FAS
+#    check_all_neighborhood_structures_for_FAS_temp2
 #    check_all_realizations_from_initial_plane_graph
+#    check_all_realizations_from_initial_plane_graph_temp2
 #    check_all_configuration_realizations
+#    check_all_configuration_realizations_temp2
 #    check_all_realizations_from_expanded_c7a4x5x5_case
 
 
@@ -1167,6 +1170,170 @@ def check_all_neighborhood_structures_for_FAS(edges,outer_lists,include_restrict
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+#remove close pair.triple restrictions entirely
+
+#specific to configurations rather than subgraphs
+
+#Now outer_lists are multiple regions (list of lists).
+def check_all_neighborhood_structures_for_FAS_temp2(edges,outer_lists,include_restrictions=False):
+    begin = time.clock()
+    G = Graph(edges)
+    if not include_restrictions:
+        edge_restrictions = {x:set([]) for x in G.vertices()}
+        ident_2_restrictions =  {x:set([]) for x in G.vertices()}
+        ident_3_restrictions =  {x:set([]) for x in G.vertices()}
+    else:
+        edge_restrictions,ident_2_restrictions,ident_3_restrictions = include_restrictions
+    count = 0
+    good_count = 0
+    bad_count = 0
+    keys = ['error', 'greedy', 'CNS', 'brute']
+    count_dict = {s:0 for s in keys}
+    bad_li = []
+    
+    
+    ##################################################3
+    li = [x[:] for x in outer_lists]
+    #twos = [x for y in li for x in y]
+    #dist1 = []
+    #dist2 = []
+    #for i in range(len(twos)):
+        #u = twos[i]
+        #for j in range(i+1,len(twos)):
+            #v = twos[j]
+            #d = G.distance(u,v)
+            #if d == 1:
+                #dist1.append(set([u,v]))
+            #elif d == 2:
+                #dist2.append(set([u,v]))
+    
+    #close_couples = set([])
+    #for pair in dist1:
+        #for v in pair:
+            #edge_restrictions[v] |= pair
+            #ident_2_restrictions[v] |= pair
+        #close_couples |= set([frozenset(pair),])
+    #for pair in dist2:
+        #for v in pair:
+            #ident_2_restrictions[v] |= pair
+        #close_couples |= set([frozenset(pair),])
+    #for roots in li:
+        #for triple in combinations(roots,3):
+            #triple_couples = set([frozenset([triple[0],triple[1]])])
+            #triple_couples |= set([frozenset([triple[0],triple[2]])])
+            #triple_couples |= set([frozenset([triple[1],triple[2]])])
+            #if len(triple_couples & close_couples) > 2:
+                #ident_3_restrictions[triple[0]] |= set([frozenset(triple[1:]),])
+                #ident_3_restrictions[triple[1]] |= set([frozenset([triple[0],triple[-1]]),])
+                #ident_3_restrictions[triple[2]] |= set([frozenset(triple[:2]),])
+    ##################################################3
+    
+    
+    
+    for idents in NS_generator_with_enforced_planarity(li,restrictions=[edge_restrictions,ident_2_restrictions,ident_3_restrictions]):
+        #restriction_flag = False
+        #for edge in idents[0]:
+            #if edge[1] in edge_restrictions[edge[0]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
+        #for pair in idents[1]:
+            #if pair[1] in ident_2_restrictions[pair[0]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
+        #for triple in idents[2]:
+            #if set(triple[1:]) in [set(x) for x in ident_3_restrictions[triple[0]]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
+        count += 1
+    print " "*10+"There are "+str(count)+" neighborhood structures to check.  (Took "+ch.timestring(time.clock()-begin)+" to count.)"
+    print " "*15+"Index      Good   Bad   Time (Cum.)   Identification"
+    
+    i = 0
+    for idents in NS_generator_with_enforced_planarity(li,restrictions=[edge_restrictions,ident_2_restrictions,ident_3_restrictions]):
+        #restriction_flag = False
+        #for edge in idents[0]:
+            #if edge[1] in edge_restrictions[edge[0]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
+        #for pair in idents[1]:
+            #if pair[1] in ident_2_restrictions[pair[0]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
+        #for triple in idents[2]:
+            #if set(triple[1:]) in [set(x) for x in ident_3_restrictions[triple[0]]]:
+                #restriction_flag = True
+                #break
+        #if restriction_flag:
+            #continue
+        i += 1
+        G_sq,f = core_square_graph(G,idents)
+        y = ch.fChoosableNoPrint(G_sq,f,inprocess=4,print_mod=100,maxIS=True,rev=False)
+        if y[0]:
+            good_count += 1
+        else:
+            bad_count += 1
+            bad_li.append(idents)
+        count_dict[y[1]] += 1
+        ti = ch.timestring(time.clock()-begin)
+        print " "*(20-len(str(i)))+str(i)+" "*(10-len(str(good_count)))+str(good_count)+" "*(6-len(str(bad_count)))+str(bad_count)+" "*(14-len(ti))+ti+"   "+str(idents)
+    
+    #print "\n"*7
+    #print "Total:",count
+    #print "Bad:",bad_count
+    #print "Good:",good_count
+    if count == good_count:
+        print "      >>> Good for all stem identifications!"
+    else:
+        print "      >>> Uh-oh!  Problem!"
+    print
+    #for s in keys:
+        #print s+":",count_dict[s]
+    end = time.clock()
+    #print "\nTime:",ch.timestring(end-begin)
+    #if good_count < count:
+        #print "Problems:"
+        #for x in bad_li:
+            #print x
+    #print
+    #if good_count == count:
+        ##print "Complete:  "+rc_str+" is GOOD."
+        #return True
+    #else:
+        ##print "Complete:  "+rc_str+" is BAD."
+        #return False
+    return count,bad_count
+
+
+
+
+
+
+
+
+
+
 #g is same as what gets yielded by makeGraph, but is entered manually
 #g has form:  order,edges,spine,roots,faces
 #open_spine is whether configuration is cxa-type.
@@ -1253,6 +1420,101 @@ def check_all_realizations_from_initial_plane_graph(g,open_spine=False,partition
 
 
 
+
+
+
+
+
+
+
+#remove close pairs/triples entirely
+
+#g is same as what gets yielded by makeGraph, but is entered manually
+#g has form:  order,edges,spine,roots,faces
+#open_spine is whether configuration is cxa-type.
+#partition_restrictions is a dictionary holding vertex:{set of forbidden identification for vertex}.
+#stem_restrictions is a list of three dictionaries:
+#stem_restrictions[0] holds vert:{set of forbidden vertices to add edge to vert}
+#stem_restrictions[1] holds vert:{set of forbidden vertices to form 2-stem-identification with vert}
+#stem_restrictions[2] holds vert:{set of forbidden vertices (as 2-sets) to form 3-stem-identification with vert}
+def check_all_realizations_from_initial_plane_graph_temp2(g,open_spine=False,partition_restrictions={},stem_restrictions=False):
+    begin = time.clock()
+    FAS_count = 0
+    realization_count = 0
+    bad_count = 0
+    totals_str = "     FAS#               #NS       #Bad\n"
+    for realization in configuration_FAS_generator(g,open_spine=open_spine,include_restrictions=partition_restrictions):
+        root_lists = get_outer_region_roots(realization[0],realization[1])
+        partition,id_dict = realization[2:4]
+
+        #if stem_restrictions:#if coming from the c7a4x5x5 cases
+            ##We need to make sure that the stem restrictions we were given are preserved, since an FAS might have identified some core vertices and shifted the labels.  (Even though the original base vertices stay in order, one new vertex from the additional face might displace a higher-labeled new vertex from the additional face.  And we are passing on restrictions with these vertices.)
+            ##print "id_dict:",id_dict
+            ##print "stem_restrictions:"
+            ##print "stem_1"
+            ##for v in stem_restrictions[0].keys():
+                ##print v,":",stem_restrictions[0][v]
+            ##print "stem_2"
+            ##for v in stem_restrictions[1].keys():
+                ##print v,":",stem_restrictions[1][v]
+            ##print "stem_3"
+            ##for v in stem_restrictions[2].keys():
+                ##print v,":",stem_restrictions[2][v]
+            ##print
+            
+            ##stem_rest_1 = {}
+            ##for x in range(len(partition)):
+                ##print "x:",x
+                ##for y in partition[x]:
+                    ##print "    y:",y
+                    ##for z in stem_restrictions[1][y]:
+                        ##print "        z:",z,"   id_dict[z]:",id_dict[z]
+            
+            #stem_rest_1 = {x:{id_dict[z] for y in partition[x] for z in stem_restrictions[0][y]} for x in range(len(partition))}
+            #stem_rest_2 = {x:{id_dict[z] for y in partition[x] for z in stem_restrictions[1][y]} for x in range(len(partition))}
+            #stem_rest_3 = {x:{frozenset([id_dict[w] for w in z]) for y in partition[x] for z in stem_restrictions[2][y]} for x in range(len(partition))}
+            #new_stem_restrictions = [stem_rest_1,stem_rest_2,stem_rest_3]
+        #else:
+            #new_stem_restrictions = False
+            
+        new_stem_restrictions = stem_restrictions
+        
+        NS_count,bad_NS_count = check_all_neighborhood_structures_for_FAS_temp2(edges=realization[0].edges(),outer_lists=root_lists,include_restrictions=new_stem_restrictions)
+        FAS_count += 1
+        realization_count += NS_count
+        bad_count += bad_NS_count
+        FAS_count_str = str(FAS_count)
+        NS_count_str = str(NS_count)
+        bad_NS_count_str = str(bad_NS_count)
+        totals_str += " "*(max(9-len(FAS_count_str),0))+FAS_count_str+" "*(max(18-len(NS_count_str),0))+NS_count_str+" "*(max(11-len(bad_NS_count_str),0))+bad_NS_count_str+"\n"
+    end = time.clock()
+    print "Done!\nSummary:"
+    print totals_str
+    print "Totals:"
+    print "     #FAS     #Realizations       #Bad"
+    FAS_count_str = str(FAS_count)
+    realization_count_str = str(realization_count)
+    bad_count_str = str(bad_count)
+    print " "*(max(9-len(FAS_count_str),0))+FAS_count_str+" "*(max(18-len(realization_count_str),0))+realization_count_str+" "*(max(11-len(bad_count_str),0))+bad_count_str
+    
+    
+    
+    if bad_count > 0:
+        print "\nNope!  Some realizations are not core-choosable."
+    else:
+        print "\nGood!  All realizations are core-choosable!"
+    print "Time: "+ch.timestring(end-begin)
+
+
+
+
+
+
+
+
+
+
+
 def check_all_configuration_realizations(config_str):
     print "Configuration:",config_str
     print "Checking all realizations for core-choosability.\n"
@@ -1262,6 +1524,36 @@ def check_all_configuration_realizations(config_str):
     else:
         open_spine=False
     check_all_realizations_from_initial_plane_graph(g,open_spine=open_spine,partition_restrictions={},stem_restrictions=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def check_all_configuration_realizations_temp2(config_str):
+    print "Configuration:",config_str
+    print "Checking all realizations for core-choosability.\n"
+    g = makeGraph(config_str)
+    if config_str[1]=='x':
+        open_spine=config_str
+    else:
+        open_spine=False
+    check_all_realizations_from_initial_plane_graph_temp2(g,open_spine=open_spine,partition_restrictions={},stem_restrictions=False)
 
 
 
