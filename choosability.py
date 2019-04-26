@@ -5338,6 +5338,10 @@ def restrictedListAssignments(G,f,inprocess_depth=3,maxIS=True,LAscheme="L",rev=
 
     #print "    >>",num_subsets[0],"remaining subgraphs can potentially be used to build list assignments."
     print "    >>",sum([len(x) for x in initial_restriction_list]),"remaining subgraphs can potentially be used to build list assignments."
+    
+    if sum([len(x) for x in initial_restriction_list]) == 0:
+        print "    >> So we can't build any bad list assignments!"
+        return
 
     tenpercent = int(sum([len(x) for x in initial_restriction_list])/100)+1#int(num_subsets[0]/10)+1
     lap = time.clock()
@@ -5356,6 +5360,7 @@ def restrictedListAssignments(G,f,inprocess_depth=3,maxIS=True,LAscheme="L",rev=
                 print "       ",counter,"multiplicities checked.  Time on batch:  "+timestring(time.clock()-lap)
                 lap = time.clock()
             counter += 1
+
 
     print "        Time for all multiplicity checks:  "+timestring(time.clock()-begin)
     #print max_mult_init.values()
@@ -5723,6 +5728,10 @@ def restrictedListAssignmentsNoPrint(G,f,inprocess_depth=3,maxIS=True,LAscheme="
 
     #print "    >>",num_subsets[0],"remaining subgraphs can potentially be used to build list assignments."
     #print "    >>",sum([len(x) for x in initial_restriction_list]),"remaining subgraphs can potentially be used to build list assignments."
+    
+    if sum([len(x) for x in initial_restriction_list]) == 0:
+        #print "    >> So we can't build any bad list assignments!"
+        return
 
     #tenpercent = int(sum([len(x) for x in initial_restriction_list])/100)+1#int(num_subsets[0]/10)+1
     #lap = time.clock()
