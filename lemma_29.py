@@ -8,8 +8,8 @@
 #------------------------------------------------------
 
 ##    check_all_realizations_from_expanded_c7a4x5x5_case
-#    run_lemma_29
-#    (main command)
+##    run_lemma_29
+##    (main command)
 
 
 
@@ -21,9 +21,6 @@
 
 from checking_realizations import *
 # We use checking_realizations.py as a module which contains the common code for Lemmas ?? and ??.
-
-#import time
-# For displaying runtime.
 
 
 

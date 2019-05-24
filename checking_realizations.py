@@ -32,6 +32,8 @@
 
 # These scripts were written with the intent of using Python 2.7 before the switch to Python 3.  There should not be many differences to implement our code in Python 3 once this change is made.
 
+import sage.all
+
 from sage.graphs.graph import Graph
 # We use the Graph class to work with our realizations.  We use it for neighborhoods (core_square_graph), the distance matrix (core_square_graph), and checking planarity (core_subgraph_generator).
 

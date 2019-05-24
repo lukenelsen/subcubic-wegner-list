@@ -21,9 +21,6 @@
 from checking_realizations import *
 # We use checking_realizations.py as a module which contains the common code for Lemmas ?? and ??.
 
-#import time
-# For displaying runtime.
-
 
 
 #------------------------------------------------------
