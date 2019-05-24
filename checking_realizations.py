@@ -1,6 +1,5 @@
 # To-Do:
     # Make vertex coordinates for tikz.
-    # Adjust the print-outs for our wants.  (remove last comma in edge list)
     # After paper is finished, check references to Lemmas/Observations/Definitions.
 
 
@@ -36,6 +35,12 @@ import sage.all
 
 from sage.graphs.graph import Graph
 # We use the Graph class to work with our realizations.  We use it for neighborhoods (core_square_graph), the distance matrix (core_square_graph), and checking planarity (core_subgraph_generator).
+
+import math
+# We use trig functions for some coordinates of vertices in NaturalCoreSubgraph.
+
+from sage.misc.functional import N
+# We round the coordinates mentioned above.
 
 from itertools import combinations
 # We use combinations as a pairs generator in stem_structure_generator when we are iterating through triples containing the last root, and also in core_square_graph when we are adding edges resulting from these triples.
@@ -305,6 +310,7 @@ class NaturalCoreSubgraph:
         # .graph -- the initial plane graph as a Graph object
         # .order -- the number of vertices in the initial plane graph
         # .spine -- the actual spine given as a list of vertices.  If the central face has specified length, then spine is not necessarily the entirety of the central face.  (So spine is not always just self.faces[0].)
+        # .coordinates -- a dictionary of x,y-coordinates for each vertex of the plane graph, used for drawing images
     
     def __init__(self,config_str):
         
@@ -331,18 +337,29 @@ class NaturalCoreSubgraph:
         # Now we build the natural core subgraph by building our list of edges,.  As we build the edges, we also keep track of the central face/spine and the specified faces.
         self.edges = []  # Each entry will be a tuple of two endpoints.
         self.faces = []  # Each entry will be a list of vertices.
+        self.coordinates = {}  # Each vertex will be a key, and the value will be an ordered pair.
         
         # We begin with the central face.  There are two possibilities:  open or closed.  In the open case, the spine will be our central face.  In our later generation, we will need to treat the central face specially to account for this.
         # In the open case, we build a path and append this to faces.
         if self.is_open:
+            self.coordinates[0] = (0,0)
             for j in range(len(FLL)):  # Build the path from 0 to len(FLL) (inclusive).
                 self.edges.append((j,j+1))
+                self.coordinates[j+1] = (j+1,0)
             self.faces.append(range(len(FLL)+1))  # Add the path to faces.
             vtx = len(FLL)  # vtx is the current vertex we are building edges to.  (For future use.)
         # In the closed case, we build a cycle and append this to faces.
         else:
+            self.coordinates[0] = (0,0)
             for j in range(self.central_face_length-1):  # Build the path from 0 to self.central_face_length-1 (inclusive).
                 self.edges.append((j,j+1))
+                if j+1 <= len(FLL):
+                    self.coordinates[j+1] = (j+1,0)
+                else:
+                    angle_degrees = -180*(j+1-len(FLL))/(self.central_face_length-len(FLL))
+                    x_coord = N(len(FLL)/2.0+math.cos(math.radians(angle_degrees))*len(FLL)/2)
+                    y_coord = N(math.sin(math.radians(angle_degrees))*len(FLL)/6)
+                    self.coordinates[j+1] = (x_coord,y_coord)
             self.edges.append((0,self.central_face_length-1))  # Close the path to make it a cycle.
             self.faces.append(range(self.central_face_length))  # Add the cycle to faces.
             vtx = self.central_face_length-1  # vtx is the current vertex we are building edges to.  (For future use.)
@@ -379,7 +396,20 @@ class NaturalCoreSubgraph:
                 vtx += 1
                 self.edges.append((start,vtx))
                 new_face.append(vtx)
+                # Set coordinates.
+                if FLL[i] == 3:
+                    self.coordinates[vtx] = (i+0.5,math.sin(math.radians(60)))
+                else:
+                    x_coord = N(i+0.5-0.5*math.cos(math.radians(180*(j+num_shared)/(FLL[i]-3))))
+                    y_coord = N(0.8+0.4*math.sin(math.radians(180*(j+num_shared)/(FLL[i]-3))))
+                    self.coordinates[vtx] = (x_coord,y_coord)
                 start = vtx
+            
+            # Reset coordinates if necessary.
+            if FLL[i] == 3:  # Center the top of a 3-face.
+                self.coordinates[vtx] = (i+0.5,math.sin(math.radians(60)))
+                if i>0 and FLL[i-1] != 'x' and i<len(FLL)-1 and FLL[i+1] != 'x':  # cxa535
+                    self.coordinates[vtx-1] = (i+0.5,1.25)
             
             # Now we build the last edge.
             self.edges.append((i+1,vtx))
