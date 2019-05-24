@@ -83,7 +83,7 @@ def core_square_graph(underlying_graph,identifications):
     twos = {x for x in underlying_graph.vertices() if underlying_graph.degree(x)==2 if not x in ids1}
     for v in underlying_graph.vertices():
         #two_nbrs is closed neighborhood of v in underlying_graph.
-        two_nbrs = set([])
+        two_nbrs = set()
         if v in twos:
             two_nbrs |= {v,}
         two_nbrs |= {x for x in underlying_graph.neighbors(v) if x in twos}

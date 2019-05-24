@@ -50,30 +50,59 @@ def makeChainsDict():
     # First, define the reducible configurations in the target set.  We use notation which carried over from initial work rather than the final notation used in the paper.  Here, we use 'x' instead of '*' to indicate the wild card symbol.  A 'cxa' prefix means an unspecified central face length.  (e.g., 'cxa3x54' is the configuration 3*54.)  A 'cKa' prefix for an integer K means a central face of specified length K.  The 'c' stands for "central" and the 'a' stands for "around".
     # We could leave some of these configurations out of the list since they are irrelevant to ChainsDict, but we leave them all for a sense of completeness.  (e.g., the configuration c4a55 has no way of having a central face of length between 7 and 14.)  (e.g., the configuration cxa454 can have a central face of length 7 through 4, but already serves its purpose in Lemma ?? by controlling the {3,4,5}-words.......)
     TargetSet =[
+    # open chain:  start with 3 and end with 3
     #'c3a3',  # Lemma ?? only
     'cxa3x3',
     'cxa3xx3',
     'cxa3xxx3',
     'cxa3xx5x3',
+    
+    # open chain:  start with 3 and end with 4
     #'c3a4',  # Lemma ?? only
     'cxa3x4',
+    'cxa35x4',
     'cxa3x54',
     'cxa3xx54',
     'cxa3xxx54',
+    
+    # open chain:  start with 3 and end with 5
+    #'cxa355',  # Lemma ?? only
     'cxa375',
     'cxa3x555',
+    
+    # open chain:  start with 3 and end with 6
     #'c3a6',  # Contains a specified (6+)-face which would not be a central face of length 7-14
+    #'cxa356',  # Contains a specified (6+)-face which would not be a central face of length 7-14
+    
+    # open chain:  start with 4 and end with 4
     #'c4a4',  # Lemma ?? only
     #'cxa454',  # Lemma ?? only
     #'cxa464',  # Contains a specified (6+)-face which would not be a central face of length 7-14
     'cxa474',
     'cxa4x54',
     'cxa4x55x4',
+    'cxa4x555x4',
     'cxa4x4x4x4',
+    
+    # open chain:  start with 4 and end with 5
     'cxa4x45',
+    #'cxa4555',  # Lemma ?? only
+    'cxa4x5555',
+    
+    # open chain:  start with 4 and end with 6
     #'cxa456',  # Contains a specified (6+)-face which would not be a central face of length 7-14
+    
+    # open chain:  start with 5 and end with 5
+    #'cxa535',  # Lemma ?? only
     #'cxa555555',  # Lemma ?? only
+    
+    # open chain:  start with 5 and end with 6
     #'cxa546',  # Contains a specified (6+)-face which would not be a central face of length 7-14
+    
+    # central 3-face
+    'c3a57',
+    
+    # central 4-face
     #'c4a55',  # No way to have a central face of length 7-14
     #'c4a56',  # No way to have a central face of length 7-14
     'c4a57',
@@ -81,6 +110,8 @@ def makeChainsDict():
     'c4a585',
     'c4a676',
     'c4a686',
+    
+    # central 5-face
     #'c5a555',  # No way to have a central face of length 7-14
     #'c5a556',  # No way to have a central face of length 7-14
     #'c5a565',  # No way to have a central face of length 7-14
@@ -88,12 +119,15 @@ def makeChainsDict():
     'c5a575',
     #'c5a656',  # No way to have a central face of length 7-14
     #'c5a666',  # No way to have a central face of length 7-14
+    #'c5a4x55',  # No way to have a central face of length 7-14
     #'c5a5x65',  # No way to have a central face of length 7-14
     #'c5a5585',  # No way to have a central face of length 7-14
     #'c5a5x66',  # No way to have a central face of length 7-14
     #'c5a55x6',  # No way to have a central face of length 7-14
     #'c5a56x6',  # No way to have a central face of length 7-14
     #'c5a6x66',  # No way to have a central face of length 7-14
+    
+    # central 7-face
     'c7a3xx4',
     'c7a3xx5',
     'c7a4xx4',
@@ -101,30 +135,26 @@ def makeChainsDict():
     'c7a4xx55',
     'c7a4x5xx5',
     'c7a55x5',
+    
+    # central 8-face
     'c8a3xx4',
     'c8a3xxx4',
-    'c8a3x55x55',
-    'c8a45xx4',
-    'c8a455x5',
-    'c8a4x5x4x4',
-    'c9a3xx4',
-    'c9a3xxx4',
-    'c9a455x4',
-    'c9a455x5',
-    'c9a545x5',
-    'cxa4x555x4',
-    'cxa4x5555',
-    #'cxa4555',  # Lemma ?? only
-    #'c5a4x55',  # No way to have a central face of length 7-14
-    #'cxa355',  # Lemma ?? only
-    #'cxa356',  # Contains a specified (6+)-face which would not be a central face of length 7-14
-    #'cxa535',  # Lemma ?? only
-    'cxa35x4',
-    'c3a57',
     'c8a35x5',
     'c8a35xx5',
     'c8a35xxx5',
     'c8a35xxxx5',
+    'c8a3x55x55',
+    'c8a45xx4',
+    'c8a455x5',
+    'c8a4x5x4x4',
+    
+    # central 9-face
+    'c9a3xx4',
+    'c9a3xxx4',
+    'c9a35x5'
+    'c9a455x4',
+    'c9a455x5',
+    'c9a545x5',
     'c9a35x5'
         ]
 
