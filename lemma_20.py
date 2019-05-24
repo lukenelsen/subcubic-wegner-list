@@ -60,7 +60,7 @@ def run_lemma_20():
         print "\n"*20
     
     print "Finished with all configurations in the target set!"
-    print "Total time: "+timestring(time.clock()-begin)
+    print "Total time for entire target set: "+timestring(time.clock()-begin)
 
 
 

@@ -585,7 +585,7 @@ def core_subgraph_generator(NCS,forbid_identifications={}):
     # Initialize the printing variables.
     count = 0  # Counts the number of partitions being checked.
     countCS = 0  # Counts how many made it to be yielded as core subgraphs.
-    print "#Partitions      #CS     Time (Cum.)"
+    print "#Partitions      #CS     Time (Cumulative)"
     print "..........0        0     begin!"
     begin = time.clock()
     
@@ -716,6 +716,7 @@ def core_subgraph_generator(NCS,forbid_identifications={}):
             yield J,new_faces
     
     print "Total #partitions:   ",count
+    
 
 
 
@@ -901,7 +902,7 @@ def check_all_stem_structures_for_given_core_subgraph(graph,open_region_roots):
     good_count = 0  # Number of core-choosable realizations
     bad_count = 0  # Number of non-core-choosable realizations
     
-    print " "*15+"Index      Good   Bad   Time (Cum.)   Stem Structure"
+    print " "*15+"Index      Good   Bad   Time (CS Cum.)   Stem Structure"
     
     # Now we check them all.
     i = 0  # i is the index of each stem structure, for printing purposes
@@ -916,7 +917,7 @@ def check_all_stem_structures_for_given_core_subgraph(graph,open_region_roots):
         else:
             bad_count += 1
         ti = timestring(time.clock()-begin)
-        print " "*(20-len(str(i)))+str(i)+" "*(10-len(str(good_count)))+str(good_count)+" "*(6-len(str(bad_count)))+str(bad_count)+" "*(14-len(ti))+ti+"   "+str(SS)
+        print " "*(20-len(str(i)))+str(i)+" "*(10-len(str(good_count)))+str(good_count)+" "*(6-len(str(bad_count)))+str(bad_count)+" "*(17-len(ti))+ti+"   "+str(SS)
     
     # Print a concluding statement.
     if bad_count:
@@ -975,25 +976,21 @@ def check_all_realizations_from_initial_plane_graph(NCS,forbid_identifications={
         bad_stem_structure_count_str = str(bad_stem_structure_count)
         totals_str += " "*(max(9-len(core_subgraph_count_str),0))+core_subgraph_count_str+" "*(max(18-len(stem_structure_count_str),0))+stem_structure_count_str+" "*(max(11-len(bad_stem_structure_count_str),0))+bad_stem_structure_count_str+"\n"
     
-    # Wrap up and print all that information!
-    end = time.clock()
+    # Now wrap up and print all that information!
     
     # First, print the summary for each core subgraph.
     print "Done!\nSummary:"
     print totals_str
     
-    # Second, print the totals from all core subgraphs.
-    print "Totals:"
-    print "      #CS     #Realizations       #Bad"
-    core_subgraph_count_str = str(core_subgraph_count)
-    realization_count_str = str(realization_count)
-    bad_count_str = str(bad_count)
-    print " "*(max(9-len(core_subgraph_count_str),0))+core_subgraph_count_str+" "*(max(18-len(realization_count_str),0))+realization_count_str+" "*(max(11-len(bad_count_str),0))+bad_count_str
-    
-    # Finally, print a concluding statement and total runtime
+    # Second, print a concluding statement and totals
     if bad_count > 0:
-        print "\nNope!  Some realizations are not core-choosable."
+        print "Nope!  Some realizations are not core-choosable.\n"
     else:
-        print "\nGood!  All realizations are core-choosable!"
-    print "Time: "+timestring(end-begin)
+        print "Good!  All realizations are core-choosable!\n"
+    
+    print "Totals for %s:"%(NCS.name)
+    print "Total #core subgraphs:  ",core_subgraph_count
+    print "Total #realizations:  ",realization_count
+    print "Total #non-core-choosable realizations:  ",bad_count
+    print "Total time:   "+timestring(time.clock()-begin)
 
