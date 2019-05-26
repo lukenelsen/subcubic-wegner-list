@@ -1,5 +1,4 @@
 # To-Do:
-    # Delete ShortTargetSet.
     # After paper is finished, check references to Lemmas/Observations/Definitions.
 
 
@@ -22,6 +21,7 @@
 # Section 4:  Checking Realizations
 #    check_all_stem_structures_for_given_core_subgraph
 #    check_all_realizations_from_initial_plane_graph
+#    check_all_realizations_of_configuration
 
 
 
@@ -60,114 +60,6 @@ def timestring(time):
     m = int(t/60)
     string = str(m)+"m "+s+"."+d+"s"
     return string
-
-ShortTargetSet =[
-    # open chain:  start with 3 and end with 3
-    'c3a3',
-    'cxa3x3',
-    'cxa3xx3',
-    'cxa3xxx3',
-    'cxa3xx5x3',
-    
-    # open chain:  start with 3 and end with 4
-    'c3a4',
-    'cxa3x4',
-    'cxa35x4',
-    'cxa3x54',
-    'cxa3xx54',
-    'cxa3xxx54',
-    
-    # open chain:  start with 3 and end with 5
-    'cxa355',
-    'cxa375',
-    'cxa3x555',
-    
-    # open chain:  start with 3 and end with 6
-    'c3a6',
-    'cxa356',
-    
-    # open chain:  start with 4 and end with 4
-    'c4a4',
-    'cxa454',
-    'cxa464',
-    'cxa474',
-    'cxa4x54',
-    #'cxa4x55x4',
-    #'cxa4x555x4',
-    #'cxa4x4x4x4',
-    
-    # open chain:  start with 4 and end with 5
-    'cxa4x45',
-    'cxa4555',
-    #'cxa4x5555',
-    
-    # open chain:  start with 4 and end with 6
-    'cxa456',
-    
-    # open chain:  start with 5 and end with 5
-    'cxa535',
-    #'cxa555555',
-    
-    # open chain:  start with 5 and end with 6
-    'cxa546',
-    
-    # central 3-face
-    'c3a57',
-    
-    # central 4-face
-    'c4a55',
-    'c4a56',
-    'c4a57',
-    'c4a66',
-    'c4a585',
-    'c4a676',
-    'c4a686',
-    
-    # central 5-face
-    'c5a555',
-    'c5a556',
-    'c5a565',
-    'c5a566',
-    'c5a575',
-    'c5a656',
-    'c5a666',
-    'c5a4x55',
-    'c5a5x65',
-    #'c5a5585',
-    #'c5a5x66',
-    'c5a55x6',
-    #'c5a56x6',
-    #'c5a6x66',
-    
-    # central 7-face
-    'c7a3xx4',
-    'c7a3xx5',
-    'c7a4xx4',
-    'c7a4x55',
-    'c7a4xx55',
-    'c7a4x5xx5',
-    #'c7a55x5',
-    
-    # central 8-face
-    'c8a3xx4',
-    'c8a3xxx4',
-    'c8a35x5',
-    'c8a35xx5',
-    'c8a35xxx5',
-    'c8a35xxxx5',
-    #'c8a3x55x55',
-    'c8a45xx4',
-    #'c8a455x5',
-    #'c8a4x5x4x4',
-    
-    # central 9-face
-    'c9a3xx4',
-    'c9a3xxx4',
-    'c9a35x5'
-    #'c9a455x4',
-    #'c9a455x5',
-    #'c9a545x5',
-        ]
 
 
 
@@ -564,7 +456,7 @@ def restricted_partition_generator(li,last_index,forbidden_dict):
 
 
 
-def core_subgraph_generator(NCS,forbid_identifications={}):    
+def core_subgraph_generator(NCS,forbid_identifications={}):
     # NCS is an object from the NaturalCoreSubgraph class which holds all the information we need.
     # forbid_identifications is a dictionary.  Any foo:bar entries (foo is a vertex, bar is a set) will forbid foo from being identified with any element of bar.  When running check_all_realizations_of_configuration, forbid_identifications is empty.  When running check_all_realizations_from_expanded_c7a4x5x5_case, we will have added entries to forbid_identifications.
     # We use Observation ? to make a dictionary of all the forbidden identifications, in addition to what was given by forbid_identifications.  Then, we generate all identifications (partitions of the vertex set) which avoid these forbidden identifications.  For each identification, we check each of the three conditions from Observation ??.  For any identifications that make it through the three conditions, we yield the graph formed by the identification and a list of its faces.
@@ -1023,4 +915,34 @@ def check_all_realizations_from_initial_plane_graph(NCS,forbid_identifications={
     print "Total #realizations:  ",realization_count
     print "Total #non-core-choosable realizations:  ",bad_count
     print "Total time:   "+timestring(time.clock()-begin)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def check_all_realizations_of_configuration(config_str):
+    # Given a configuration as string in the c/a notation described in a comment above, generates and checks every realization for core-choosability.
+    # This simply prepares the natural core subgraph and feeds it into check_all_realizations_from_initial_plane_graph.
+    
+    print "Configuration:",config_str
+    print "Checking all realizations for core-choosability.\n"
+    
+    # The NaturalCoreSubgraph class prepares all the information we need about the natural core subgraph of the configuration.
+    NCS = NaturalCoreSubgraph(config_str)
+    
+    check_all_realizations_from_initial_plane_graph(NCS,forbid_identifications={})
+
+
+
+
+
 

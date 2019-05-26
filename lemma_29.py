@@ -1,5 +1,4 @@
 # To-Do:
-    # Separate expanded c7a4x5x5 stuff into its own sage script.
     # After paper is finished, check references to Lemmas/Observations/Definitions.
 
 
@@ -7,9 +6,9 @@
 # Contents
 #------------------------------------------------------
 
-##    check_all_realizations_from_expanded_c7a4x5x5_case
-##    run_lemma_29
-##    (main command)
+#    check_all_realizations_from_expanded_c7a4x5x5_case
+#    run_lemma_29
+#    (main command)
 
 
 
@@ -22,8 +21,6 @@
 from checking_realizations import *
 # We use checking_realizations.py as a module which contains the common code for Lemmas ?? and ??.
 
-import copy###
-
 #------------------------------------------------------
 # The Routines
 #------------------------------------------------------
@@ -34,169 +31,122 @@ import copy###
 
 
 
-###Fix to work with NaturalCoreSubgraph class.
+
 def check_all_realizations_from_expanded_c7a4x5x5_case(case):
+    # This takes an int between 1 and 12 corresponding to a particular case from Lemma ??.  It then builds the corresponding plane graph and dictionary of forbidden vertex identifications, and then checks all resulting realizations for core-choosability.
+    
+    
     print "Expanding scope around c7a4x5x5:"
-
-    PlaneGraph = NaturalCoreSubgraph('c7a4x5x5')
+    
     # We begin with the natural core subgraph of c7a4x5x5, but we later add a face and adjust PlaneGraph accordingly.
+    PlaneGraph = NaturalCoreSubgraph('c7a4x5x5')
     
-    #roots.sort()##why sort?  pretty sure this should be unnecessary
-    
-    ### remove stem identification dictionaries that don't affect partition restrictions.
-    
-    ###Initial formulations of the restrictions:  no root identifications, and no stem identifications 
-    ###except non-edge [6,8] and triple [6,8,12].
+    # None of the vertices in the original core subgraph will be permitted to be identified with each other.
     forbidden_dict = {x:set(PlaneGraph.graph.vertices()) for x in PlaneGraph.graph.vertices()}
-    #stem_1 = {x:set(roots)-{x,} for x in roots}
-    #stem_2 = {x:set(roots)-{x,} for x in roots}
-    #stem_2[6].remove(8)
-    #stem_2[8].remove(6)
-    #stem_3 = {x:{frozenset([roots[y],z]) for y in range(len(roots)-1) if not roots[y]==x for z in roots[y+1:] if not z==x} for x in roots}
-    #stem_3[6].remove(frozenset([8,12]))
-    #stem_3[8].remove(frozenset([6,12]))
-    #stem_3[12].remove(frozenset([6,8]))
-
-    ##Even for non-roots, we want to have the stem_restrictions defined in check_all_realizations_from_initial_plane_graph.
-    #for v in [x for x in range(order) if not x in roots]:
-        #stem_1[v] = set()
-        #stem_2[v] = set()
-        #stem_3[v] = set()
     
     
-
-    #Now, which case are we in?
-    #A \ne 3 by identification case.
-    #A \ne 4 by identification case.
-    #A \ne 5 by 4:57.
+    # Now we manually preprocess our adjustments to PlaneGraph according to each of the twelve remaining cases.
+    # new_face_length will be the length of the new face, and base_border will be the clockwise ordering of the part of the boundary of the new face which is already in PlaneGraph.
+    
+    # We begin with the faces which are necessarily adjacent to the central 7-face:  A, C, G, K.
     if case == 1:
-        print "Case A = 6."
-        le = 6#Length of new face.
-        base_border = [7,0,6]#In appropriate rotation for new face.
+        print "Case A = 6.\n"
+        new_face_length = 6
+        base_border = [7,0,6]
+        PlaneGraph.name += "CaseA6"
     
-    #B \ne 3 by identification case.
-    #B \ne 4 by 44.
     elif case == 2:
-        print "B = 5."
-        le = 5#Length of new face.
-        base_border = [8,7]#In appropriate rotation for new face.
+        print "C/D = 6.\n"
+        new_face_length = 6
+        base_border = [9,2,1,8]
+        PlaneGraph.name += "CaseC6"
+    
     elif case == 3:
-        print "B = 6."
-        le = 6#Length of new face.
-        base_border = [8,7]#In appropriate rotation for new face.
+        print "G/H = 6.\n"
+        new_face_length = 6
+        base_border = [12,4,3,11]
+        PlaneGraph.name += "CaseG6"
     
-    #C/D \ne 3 by identification case.
-    #C/D \ne 4 by identification case.
-    #C/D \ne 5 by identification case.
     elif case == 4:
-        print "C/D = 6."
-        le = 6#Length of new face.
-        base_border = [9,2,1,8]#In appropriate rotation for new face.
+        print "K = 6.\n"
+        new_face_length = 6
+        base_border = [6,5,14]
+        PlaneGraph.name += "CaseK6"
     
-    #E \ne 3 by identification case.
+    # Then we move on to the other face adjacent to the 4-face:  B.
     elif case == 5:
-        print "E = 4."
-        le = 4#Length of new face.
-        base_border = [10,9]#In appropriate rotation for new face.
+        print "B = 5.\n"
+        new_face_length = 5
+        base_border = [8,7]
+        PlaneGraph.name += "CaseB5"
     elif case == 6:
-        print "E = 5."
-        le = 5#Length of new face.
-        base_border = [10,9]#In appropriate rotation for new face.
+        print "B = 6.\n"
+        new_face_length = 6
+        base_border = [8,7]
+        PlaneGraph.name += "CaseB6"
+    
+    # Then we move on to another face adjacent to the first 5-face:  E.
     elif case == 7:
-        print "E = 6."
-        le = 6#Length of new face.
-        base_border = [10,9]#In appropriate rotation for new face.
-    
-    #G/H \ne 3 by identification case.
-    #G/H \ne 4 by identification case.
-    #G/H \ne 5 by identification case.
+        print "E = 4.\n"
+        new_face_length = 4
+        base_border = [10,9]
+        PlaneGraph.name += "CaseE4"
     elif case == 8:
-        print "G/H = 6."
-        le = 6#Length of new face.
-        base_border = [12,4,3,11]#In appropriate rotation for new face.
-    
-    #I \ne 3 by identification case.
+        print "E = 5.\n"
+        new_face_length = 5
+        base_border = [10,9]
+        PlaneGraph.name += "CaseE5"
     elif case == 9:
-        print "I = 4."
-        le = 4#Length of new face.
-        base_border = [13,12]#In appropriate rotation for new face.
-    elif case == 10:
-        print "I = 5."
-        le = 5#Length of new face.
-        base_border = [13,12]#In appropriate rotation for new face.
-    elif case == 11:
-        print "I = 6."
-        le = 6#Length of new face.
-        base_border = [13,12]#In appropriate rotation for new face.
+        print "E = 6.\n"
+        new_face_length = 6
+        base_border = [10,9]
+        PlaneGraph.name += "CaseE6"
     
-    #K \ne 3 by identification case.
-    #K \ne 4 by identification case.
+    # Then we move on to another face adjacent to the second 5-face:  I.
+    elif case == 10:
+        print "I = 4.\n"
+        new_face_length = 4
+        base_border = [13,12]
+        PlaneGraph.name += "CaseI4"
+    elif case == 11:
+        print "I = 5.\n"
+        new_face_length = 5
+        base_border = [13,12]
+        PlaneGraph.name += "CaseI5"
     elif case == 12:
-        print "K = 5."
-        le = 5#Length of new face.
-        base_border = [6,5,14]#In appropriate rotation for new face.
-    elif case == 13:
-        print "K = 6."
-        le = 6#Length of new face.
-        base_border = [6,5,14]#In appropriate rotation for new face.
-
-    else:
-        print "Out of range!"
-        
-    print
-
-
-
-    new_num = le - len(base_border)
-    old_order = PlaneGraph.order
-
-    i = 0
-    PlaneGraph.edges.append((base_border[-1],PlaneGraph.order))
-    i += 1
-    while i < new_num:
-        PlaneGraph.edges.append((PlaneGraph.order,PlaneGraph.order+1))
-        i += 1
-        PlaneGraph.order += 1
-    PlaneGraph.edges.append((base_border[0],PlaneGraph.order))
+        print "I = 6.\n"
+        new_face_length = 6
+        base_border = [13,12]
+        PlaneGraph.name += "CaseI6"
+    
+    
+    # Now that we have the beginning of our new face, we can build the rest of it and change PlaneGraph accordingly.
+    PlaneGraph.faces.append(base_border)  # We will extend the new face from base_border.
+    num_new_vtxs = new_face_length - len(base_border)
+    
+    # Build the first edge out from the original plane graph.
+    PlaneGraph.edges.append((base_border[-1],PlaneGraph.order))  # base_border has not yet been changed, so base_border[-1] is our starting point.  PlaneGraph.order is the name of the new vertex.
+    PlaneGraph.faces[-1].append(PlaneGraph.order)  # Add the new vertex to our new face.
     PlaneGraph.order += 1
-
-    #del roots[roots.index(base_border[0])]#switch roots to set?
-    #del roots[roots.index(base_border[-1])]
-    #roots.extend(range(old_order,order))
-
-    new_face = copy.copy(base_border)###avoid copy?  Do a loop if necessary
-    new_face.extend(range(old_order,PlaneGraph.order))
-    PlaneGraph.faces.append(new_face)
-
-#     Graph(edges).show()
-    #g = (order,edges,spine,roots,faces)
-#     print g
-    #Initialize dictionaries for the new vertices:
-    for v in range(old_order,PlaneGraph.order):
-        forbidden_dict[v] = set(new_face)
-        #We could further restrict things that new vertices can identify with, but we're not going to.
-        #stem_1[v] = set()
-        #stem_2[v] = set()
-        #stem_3[v] = set()
-    #Actually, we'll go ahead and add some basic restrictions: new vertices adjacent to the base can't 
-    #be identified with vertices from the original that the base neighbors couldn't have an edge to, 
-    #because this will make such an edge.
-    #forbidden_dict[old_order] |= stem_1[base_border[-1]]
-    #forbidden_dict[order-1] |= stem_1[base_border[0]]
-    #Also, new vertices adjacent to the base can't be make an edge with vertices from the original that
-    #the base neighbors couldn't have a 2-stem with, because this will make such a 2-stem.
-    #stem_1[old_order] |= stem_2[base_border[-1]]
-    #stem_1[order-1] |= stem_2[base_border[0]]
-    #Also, new vertices distance 2 from the base can't be identified with vertices from the original 
-    #that the base neighbors (distance 2) couldn't have a 2-stem with, because this will make such a 2-stem.
-    #if old_order - order > 1:
-        #forbidden_dict[old_order+1] |= stem_2[base_border[-1]]
-        #forbidden_dict[order-2] |= stem_2[base_border[0]]
-    #Again, we could do more restrictions.  But it would probably not be worth the savings for such small additional faces.
-
-
-    # No need to update anything else from PlaneGraph before feeding into the checker.
-    ###nope -- change PlaneGraph.name in the above cases.
+    
+    # Build all remaining edges of the new face except the last closing edge.
+    for i in range(num_new_vtxs-1):  # We already built one new vertex.
+        PlaneGraph.edges.append((PlaneGraph.order-1,PlaneGraph.order))  # PlaneGraph.order is the name of the new vertex.
+        PlaneGraph.faces[-1].append(PlaneGraph.order)  # Add the new vertex to our new face.
+        PlaneGraph.order += 1
+    
+    # Build the last closing edge of the new face.
+    PlaneGraph.edges.append((PlaneGraph.faces[-1][0],PlaneGraph.faces[-1][-1]))
+    
+    
+    # Complete forbidden_dict.
+    for v in range(15,15+num_new_vtxs):  # Initialize forbidden_dict for the new vertices.
+        forbidden_dict[v] = set()
+    for v in PlaneGraph.faces[-1]:  # For all the vertices on the new face, add the face to the forbidden set.
+        forbidden_dict[v] |= set(PlaneGraph.faces[-1])
+    
+    
+    # There is no need to update anything else from PlaneGraph before feeding into the checker, since it will use only .name, .order, .is_open (unchanged), .faces, and .edges.
     check_all_realizations_from_initial_plane_graph(PlaneGraph,forbid_identifications=forbidden_dict)
 
 
@@ -208,19 +158,23 @@ def check_all_realizations_from_expanded_c7a4x5x5_case(case):
 
 
 
-
-###adjust for lemma 29
-#def run_lemma_20():
-    ## Verifies that each configuration in the target set is reducible by checking that all realizations are core-choosable.
+###add normal run for c7a4x5x5 first -- need to put check configuration routine into common pool.
+def run_lemma_29():
+    # Verifies that each configuration in the target set is reducible by checking that all realizations are core-choosable.
     
-    #begin = time.clock()
+    begin = time.clock()
     
-    #for rc in TargetSet:
-        #check_all_realizations_of_configuration(rc)
-        #print "\n"*20
+    # First, check the original configuration to see the two bad realizations.
+    check_all_realizations_of_configuration('c7a4x5x5')
+    print "\n"*10
     
-    #print "Finished with all configurations in the target set!"
-    #print "Total time: "+timestring(time.clock()-begin)
+    # Now check the remaining 12 cases of faces around the 4- and 5-faces.
+    for i in range(1,13):
+        check_all_realizations_from_expanded_c7a4x5x5_case(i)
+        print "\n"*10
+    
+    print "Finished with all analysis of c7a4x5x5!"
+    print "Total time: "+timestring(time.clock()-begin)
 
 
 
@@ -231,9 +185,8 @@ def check_all_realizations_from_expanded_c7a4x5x5_case(case):
 
 
 
-####adjust for lemma 29
-#if __name__ == "__main__":
-    #run_lemma_20()
+if __name__ == "__main__":
+    run_lemma_29()
 
 
 
