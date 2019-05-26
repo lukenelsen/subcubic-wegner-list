@@ -19,7 +19,11 @@
 # These scripts were written with the intent of using Python 2.7 before the switch to Python 3.  There should not be many differences to implement our code in Python 3 once this change is made.
 
 from checking_realizations import *
-# We use checking_realizations.py as a module which contains the common code for Lemmas ?? and ??.
+# We use checking_realizations.py as a module which contains the common code for Lemmas ??, ??, and ??.
+
+
+
+# For configuration names, we use notation slightly different from the notation used in the paper.  The configuration b:s_1...s_t is encoded as "cbas_1...s_t" where any "*" is replaced with "x".  (The "c" precedes the (c)entral face and the "a" precedes the facial length list (a)round the central face.)  For example, "9:3**4" is encoded as "c9a3xx4" and "4*555*4" is encoded as "cxa4x555x4".
 
 
 
@@ -30,8 +34,8 @@ from checking_realizations import *
 
 
 def check_all_realizations_of_configuration(config_str):
-    # Given a configuration as string "c?a????", generates and checks every realization for core-choosability.
-    # This simply prepares the natural core subgraph and feeds it into check_all_realizations_from_initial_plane_graph.  As the only routine which is not needed for lemma_??.py, this is separated from check_all_realizations_from_initial_plane_graph to distinguish from the preparations necessary for Lemma ??.
+    # Given a configuration as string in the c/a notation described in a comment above, generates and checks every realization for core-choosability.
+    # This simply prepares the natural core subgraph and feeds it into check_all_realizations_from_initial_plane_graph.
     
     print "Configuration:",config_str
     print "Checking all realizations for core-choosability.\n"

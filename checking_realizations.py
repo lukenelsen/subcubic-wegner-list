@@ -1,5 +1,5 @@
 # To-Do:
-    # Make vertex coordinates for tikz.
+    # Delete ShortTargetSet.
     # After paper is finished, check references to Lemmas/Observations/Definitions.
 
 
@@ -52,7 +52,7 @@ import time
 # For displaying runtime.
 
 def timestring(time):
-    # Displays time length:  ?m ?.?s
+    # Displays time length:  #m #.#s
     
     t = int(time)
     d = str(int((10*(time-t))%10))
@@ -68,7 +68,7 @@ ShortTargetSet =[
     'cxa3xx3',
     'cxa3xxx3',
     'cxa3xx5x3',
-
+    
     # open chain:  start with 3 and end with 4
     'c3a4',
     'cxa3x4',
@@ -76,16 +76,16 @@ ShortTargetSet =[
     'cxa3x54',
     'cxa3xx54',
     'cxa3xxx54',
-
+    
     # open chain:  start with 3 and end with 5
     'cxa355',
     'cxa375',
     'cxa3x555',
-
+    
     # open chain:  start with 3 and end with 6
     'c3a6',
     'cxa356',
-
+    
     # open chain:  start with 4 and end with 4
     'c4a4',
     'cxa454',
@@ -95,25 +95,25 @@ ShortTargetSet =[
     #'cxa4x55x4',
     #'cxa4x555x4',
     #'cxa4x4x4x4',
-
+    
     # open chain:  start with 4 and end with 5
     'cxa4x45',
     'cxa4555',
     #'cxa4x5555',
-
+    
     # open chain:  start with 4 and end with 6
     'cxa456',
-
+    
     # open chain:  start with 5 and end with 5
     'cxa535',
     #'cxa555555',
-
+    
     # open chain:  start with 5 and end with 6
     'cxa546',
-
+    
     # central 3-face
     'c3a57',
-
+    
     # central 4-face
     'c4a55',
     'c4a56',
@@ -122,7 +122,7 @@ ShortTargetSet =[
     'c4a585',
     'c4a676',
     'c4a686',
-
+    
     # central 5-face
     'c5a555',
     'c5a556',
@@ -131,14 +131,14 @@ ShortTargetSet =[
     'c5a575',
     'c5a656',
     'c5a666',
-    'c5a4x55',    
+    'c5a4x55',
     'c5a5x65',
     #'c5a5585',
     #'c5a5x66',
     'c5a55x6',
     #'c5a56x6',
     #'c5a6x66',
-
+    
     # central 7-face
     'c7a3xx4',
     'c7a3xx5',
@@ -147,7 +147,7 @@ ShortTargetSet =[
     'c7a4xx55',
     'c7a4x5xx5',
     #'c7a55x5',
-
+    
     # central 8-face
     'c8a3xx4',
     'c8a3xxx4',
@@ -159,7 +159,7 @@ ShortTargetSet =[
     'c8a45xx4',
     #'c8a455x5',
     #'c8a4x5x4x4',
-
+    
     # central 9-face
     'c9a3xx4',
     'c9a3xxx4',
@@ -171,7 +171,7 @@ ShortTargetSet =[
 
 
 
-# We store the target set as a list of strings.  Each string follows a slightly different format than our standard description in the paper.  The configuration b:s_1...s_t is encoded as "cbas_1...s_t" where any "*" is replaced with "x".  (The "c" precedes the (c)entral face and the "a" precedes the facial length list (a)round the central face.)  For example, "9:3**4" is encoded as "c9a3xx4" and "4*555*4" is encoded as "cxa4x555x4".
+# We store the target set as a list of strings.  Each string follows a slightly different format than that in the paper.  The configuration b:s_1...s_t is encoded as "cbas_1...s_t" where any "*" is replaced with "x".  (The "c" precedes the (c)entral face and the "a" precedes the facial length list (a)round the central face.)  For example, "9:3**4" is encoded as "c9a3xx4" and "4*555*4" is encoded as "cxa4x555x4".
 
 TargetSet =[
     # open chain:  start with 3 and end with 3
@@ -180,7 +180,7 @@ TargetSet =[
     'cxa3xx3',
     'cxa3xxx3',
     'cxa3xx5x3',
-
+    
     # open chain:  start with 3 and end with 4
     'c3a4',  # In the paper, we list this configuration as cxa34.
     'cxa3x4',
@@ -188,16 +188,16 @@ TargetSet =[
     'cxa3x54',
     'cxa3xx54',
     'cxa3xxx54',
-
+    
     # open chain:  start with 3 and end with 5
     'cxa355',
     'cxa375',
     'cxa3x555',
-
+    
     # open chain:  start with 3 and end with 6
     'c3a6',  # In the paper, we list this configuration as cxa36.
     'cxa356',
-
+    
     # open chain:  start with 4 and end with 4
     'c4a4',  # In the paper, we list this configuration as cxa44.
     'cxa454',
@@ -207,25 +207,25 @@ TargetSet =[
     'cxa4x55x4',
     'cxa4x555x4',
     'cxa4x4x4x4',
-
+    
     # open chain:  start with 4 and end with 5
     'cxa4x45',
     'cxa4555',
     'cxa4x5555',
-
+    
     # open chain:  start with 4 and end with 6
     'cxa456',
-
+    
     # open chain:  start with 5 and end with 5
     'cxa535',
     'cxa555555',
-
+    
     # open chain:  start with 5 and end with 6
     'cxa546',
-
+    
     # central 3-face
     'c3a57',
-
+    
     # central 4-face
     'c4a55',
     'c4a56',
@@ -234,7 +234,7 @@ TargetSet =[
     'c4a585',
     'c4a676',
     'c4a686',
-
+    
     # central 5-face
     'c5a555',
     'c5a556',
@@ -243,14 +243,14 @@ TargetSet =[
     'c5a575',
     'c5a656',
     'c5a666',
-    'c5a4x55',    
+    'c5a4x55',
     'c5a5x65',
     'c5a5585',
     'c5a5x66',
     'c5a55x6',
     'c5a56x6',
     'c5a6x66',
-
+    
     # central 7-face
     'c7a3xx4',
     'c7a3xx5',
@@ -259,7 +259,7 @@ TargetSet =[
     'c7a4xx55',
     'c7a4x5xx5',
     'c7a55x5',
-
+    
     # central 8-face
     'c8a3xx4',
     'c8a3xxx4',
@@ -271,7 +271,7 @@ TargetSet =[
     'c8a45xx4',
     'c8a455x5',
     'c8a4x5x4x4',
-
+    
     # central 9-face
     'c9a3xx4',
     'c9a3xxx4',
@@ -418,7 +418,7 @@ class NaturalCoreSubgraph:
             
             # The face is now complete.
             self.faces.append(new_face)
-            
+        
         # Add a few other things.
         self.graph = Graph(self.edges)
         self.order = self.graph.order()
@@ -453,7 +453,7 @@ def core_square_graph(core_subgraph,stem_structure):
     for i,j in combinations(range(new_G.order()),2):
         if M[i][j] == 2:
             new_G.add_edge((i,j))
-
+    
     # Finally, add any additional edges which would live in the square of the host graph.  (The current graph is (H[A])^2, but we might need to add some edges to get H^2[A].)
     for edge in stem_structure[1]:  # Roots connected to stems of degree 2 from the stem structure.
         new_G.add_edge(edge)  # If edge is already an edge of the graph, then this does nothing.
@@ -493,7 +493,7 @@ def core_square_graph(core_subgraph,stem_structure):
                 restriction_index += 1
         
         f.append(7-restriction_index)
-
+    
     return new_G,f
 
 
@@ -746,7 +746,7 @@ def core_subgraph_generator(NCS,forbid_identifications={}):
             yield J,new_faces
     
     print "Total #partitions:   ",count
-    
+
 
 
 
@@ -761,7 +761,7 @@ def core_subgraph_generator(NCS,forbid_identifications={}):
 #------------------------------------------
 #  Section 3:  Stem Structure Generation
 #------------------------------------------
-    
+
 
 
 
