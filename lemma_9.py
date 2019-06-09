@@ -23,7 +23,7 @@ from checking_realizations import *
 # We use checking_realizations.py as a module which contains the common code for Lemmas ??, ??, and ??.
 
 import choosability as ch
-# We use fChoosableNoPrint as a black box.
+# We use fChoosable as a black box.
 
 
 
@@ -57,7 +57,7 @@ def length_equals_8():
         print "          "+str([e[:2] for e in core_square.edges()])
         print "      >>> The list size function is given by the following list:"
         print "          "+str(f)
-        x = ch.fChoosableNoPrint(core_square,f)
+        x = ch.fChoosable(core_square,f)
         if x[0]:
             print "      >>> Verified ("+x[1]+") -- the induced subgraph of the square is choosable for the given list size function."
         else:
@@ -100,7 +100,7 @@ def length_equals_9():
         print "          "+str([e[:2] for e in core_square.edges()])
         print "      >>> The list size function is given by the following list:"
         print "          "+str(f)
-        x = ch.fChoosableNoPrint(core_square,f)
+        x = ch.fChoosable(core_square,f)
         if x[0]:
             print "      >>> Verified ("+x[1]+") -- the induced subgraph of the square is choosable for the given list size function."
         else:

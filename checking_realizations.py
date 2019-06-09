@@ -46,7 +46,7 @@ from itertools import combinations
 # We use combinations as a pairs generator in stem_structure_generator when we are iterating through triples containing the last root, and also in core_square_graph when we are adding edges resulting from these triples.
 
 import choosability as ch
-# We use fChoosableNoPrint as a black box to verify core-choosability for all our realizations.
+# We use fChoosable as a black box to verify core-choosability for all our realizations.
 
 import time
 # For displaying runtime.
@@ -250,7 +250,7 @@ class NaturalCoreSubgraph:
                 else:
                     angle_degrees = -180*(j+1-len(FLL))/(self.central_face_length-len(FLL))
                     x_coord = N(len(FLL)/2.0+math.cos(math.radians(angle_degrees))*len(FLL)/2)
-                    y_coord = N(math.sin(math.radians(angle_degrees))*len(FLL)/6)
+                    y_coord = N(math.sin(math.radians(angle_degrees))*2/3)
                     self.coordinates[j+1] = (x_coord,y_coord)
             self.edges.append((0,self.central_face_length-1))  # Close the path to make it a cycle.
             self.faces.append(range(self.central_face_length))  # Add the cycle to faces.
@@ -293,7 +293,7 @@ class NaturalCoreSubgraph:
                     self.coordinates[vtx] = (i+0.5,math.sin(math.radians(60)))
                 else:
                     x_coord = N(i+0.5-0.5*math.cos(math.radians(180*(j+num_shared)/(FLL[i]-3))))
-                    y_coord = N(0.8+0.4*math.sin(math.radians(180*(j+num_shared)/(FLL[i]-3))))
+                    y_coord = N(0.5*math.sqrt(3)+0.4*math.sin(math.radians(180*(j+num_shared)/(FLL[i]-3))))
                     self.coordinates[vtx] = (x_coord,y_coord)
                 start = vtx
             
@@ -502,7 +502,7 @@ def core_subgraph_generator(NCS,forbid_identifications={}):
     
     
     
-    # Now that we have finished prepared forbidden_dict, we feed it to the partition generator to inspect the identifications.
+    # Now that we have finished preparing forbidden_dict, we feed it to the partition generator to inspect the identifications.
     
     # Initialize the printing variables.
     count = 0  # Counts the number of partitions being checked.
@@ -833,7 +833,7 @@ def check_all_stem_structures_for_given_core_subgraph(graph,open_region_roots):
         G_sq,f = core_square_graph(graph,SS)
         
         # fChoosableNoPrint takes a graph and a list size function and returns a tuple of two elements.  The first element is boolean:  True means that the graph is f-choosable, and False means it is not.  The second element is a string indicating the method used for its evaluation:  'error', 'greedy', 'CNS', or 'brute'
-        y = ch.fChoosableNoPrint(G_sq,f,inprocess=4,print_mod=100,maxIS=True,rev=False)
+        y = ch.fChoosable(G_sq,f,inprocess=4)
         if y[0]:
             good_count += 1
         else:

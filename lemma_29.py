@@ -158,7 +158,7 @@ def check_all_realizations_from_expanded_c7a4x5x5_case(case):
 
 
 
-###add normal run for c7a4x5x5 first -- need to put check configuration routine into common pool.
+
 def run_lemma_29():
     # Verifies that each configuration in the target set is reducible by checking that all realizations are core-choosable.
     
